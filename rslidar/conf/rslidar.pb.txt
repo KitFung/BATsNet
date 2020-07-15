@@ -3,5 +3,5 @@ model: "RS16"
 difop_port: 7788
 # cut_angle: -0.01
 cut_angle: 0
-output_packets_topic: "/rslidar/scan/1/lab/test1"
-output_difop_topic: "/rslidar/difop/1/lab/test1"
+output_packets_topic: "/lidar/rslidar/scan/1/lab/test1"
+output_difop_topic: "/lidar/rslidar/difop/1/lab/test1"

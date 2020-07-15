@@ -1,0 +1,3 @@
+write_topic: "/radar/iwr6843/raw/1/lab/test1"
+conf: "/home/kit/dev/BATsNet/radar_iwr6843/conf/a.cfg"
+read_parsed: false

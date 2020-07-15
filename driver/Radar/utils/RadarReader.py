@@ -36,6 +36,14 @@ def serialConfig(configFileName):
 
     # Read the configuration file and send it to the board
     config = [line.rstrip('\r\n') for line in open(configFileName)]
+
+    # CLIport.write(('flushCfg\n').encode())
+    # CLIport.write(('sensorStart\n').encode())
+    # time.sleep(1)
+    # CLIport.write(('sensorStop\n').encode())
+    # time.sleep(0.01)
+    # exit(1)
+    
     for i in config:
         CLIport.write((i + '\n').encode())
         # logging.info(i)
@@ -144,6 +152,7 @@ class RadarReader():
                 # logging.info("Radar count: " + str(currentIndex))
                 # draw(detObj)    # very time consuming: > 0.1s
                 currentIndex += 1
+                # print(frameData[-1])
 
             if currentIndex == self.num:
                 CLIport.write(('sensorStop\n').encode())
@@ -151,20 +160,17 @@ class RadarReader():
                 Dataport.close()
 
                 # Saved as pickle file
-                logging.info("Radar Done!")
-                self.outputFile = self.folderName + '/' + timestamp + '.pkl'
-                with open(self.outputFile, 'wb') as f:
-                    pickle.dump(frameData, f)
-                    break
+                # logging.info("Radar Done!")
+                # self.outputFile = self.folderName + '/' + timestamp + '.pkl'
+                # with open(self.outputFile, 'wb') as f:
+                #     pickle.dump(frameData, f)
+                #     break
 
     # Funtion to read and parse the incoming data
     def readAndParseData68xx(self, Dataport, configParameters):
 
         # Constants
-        OBJ_STRUCT_SIZE_BYTES = 12
-        BYTE_VEC_ACC_MAX_SIZE = 2**15
         MMWDEMO_UART_MSG_DETECTED_POINTS = 1
-        MMWDEMO_UART_MSG_RANGE_PROFILE = 2
         maxBufferSize = 2**15
         tlvHeaderLengthInBytes = 8
         pointLengthInBytes = 16

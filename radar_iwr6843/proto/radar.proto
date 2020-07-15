@@ -1,0 +1,46 @@
+syntax = "proto2";
+
+package radar;
+
+enum Model {
+  IWR6843 = 0;
+}
+
+message RawRadarResult {
+  required double timestamp = 1;
+  required int32 seq = 2;
+  required Model model = 3;
+  required bytes data = 4;
+}
+
+message DetectedObject {
+  optional float x = 1;
+  optional float y = 2;
+  optional float z = 3;
+  optional float vel = 4;
+}
+
+message RadarResult {
+  required double timestamp = 1;
+  required int32 seq = 2;
+  required Model model = 3;
+  repeated DetectedObject object = 4;
+}
+
+message MultiRawResult {
+  required double timestamp = 1;
+  required int32 seq = 2;
+  repeated RawRadarResult result = 3;
+}
+
+message MultiResult {
+  required double timestamp = 1;
+  required int32 seq = 2;
+  repeated RadarResult parsed_result = 3;
+}
+
+message Conf {
+  required string conf = 1;
+  optional bool read_parsed = 2[default = false];
+  required string write_topic = 3;
+}

@@ -17,3 +17,10 @@ set_target_properties(data_collector PROPERTIES VERSION ${PROJECT_VERSION})
 # target_link_libraries(data_collector ${Protobuf_LIBRARIES})
 target_link_libraries(data_collector mosquitto mosquittopp)
 target_compile_options (data_collector PRIVATE -Wno-deprecated-declarations)
+
+target_include_directories(data_collector
+  PUBLIC
+    include
+  PRIVATE
+    src
+)

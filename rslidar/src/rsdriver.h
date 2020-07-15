@@ -24,7 +24,7 @@
 
 #include "proto_gen/rslidar.pb.h"
 
-#include "data_collecter/include/data_collector.h"
+#include "data_collector/include/data_collector.h"
 
 namespace rslidar {
 class rslidarDriver {
