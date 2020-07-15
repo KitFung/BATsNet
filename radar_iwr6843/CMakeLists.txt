@@ -19,6 +19,12 @@ EXEC_PROGRAM(protoc
        ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto)
 
 file(GLOB SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen/*.cc)
+file(GLOB CONF_FILES ${CMAKE_CURRENT_SOURCE_DIR}/conf/*)
 add_executable(radar_iwr6843 ${SRC_FILES})
 target_link_libraries(radar_iwr6843 ${Protobuf_LIBRARIES} data_collector)
 target_include_directories(radar_iwr6843 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} data_collector)
+
+install(DIRECTORY DESTINATION /opt/drivers/bin)
+install(DIRECTORY conf/ DESTINATION /opt/drivers/conf/radar)
+install(TARGETS radar_iwr6843 DESTINATION /opt/drivers/bin)
+install(FILES systemd/radar_iwr6843.service DESTINATION /etc/systemd/system)

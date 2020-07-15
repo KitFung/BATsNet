@@ -24,3 +24,5 @@ target_include_directories(data_collector
   PRIVATE
     src
 )
+
+install(TARGETS data_collector DESTINATION /usr/local/lib)

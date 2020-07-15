@@ -31,7 +31,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <netinet/in.h>
-#include <pcap.h>
 #include <poll.h>
 #include <signal.h>
 #include <sstream>

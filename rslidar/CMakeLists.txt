@@ -19,10 +19,15 @@ EXEC_PROGRAM(protoc
        --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
        ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto)
 
-add_library(rslidar_lib SHARED src/input.cc src/rsdriver.cpp proto_gen/rslidar.pb.cc)
+add_library(rslidar_lib STATIC src/input.cc src/rsdriver.cpp proto_gen/rslidar.pb.cc)
 target_link_libraries(rslidar_lib ${Protobuf_LIBRARIES} data_collector)
 target_include_directories(rslidar_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} data_collector)
 
 
 add_executable(rslidar src/main.cc)
 target_link_libraries(rslidar rslidar_lib ${Boost_LIBRARIES} ${Protobuf_LIBRARIES} data_collector)
+
+install(DIRECTORY DESTINATION /opt/drivers/bin)
+install(DIRECTORY conf/ DESTINATION /opt/drivers/conf/rslidar)
+install(TARGETS rslidar DESTINATION /opt/drivers/bin)
+install(FILES systemd/rslidar.service DESTINATION /etc/systemd/system)
