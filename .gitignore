@@ -1,5 +1,7 @@
 data
 *_env
+proto_gen/*.pb.h
+proto_gen/*.pb.cc
 
 .vscode
 # Prerequisites
