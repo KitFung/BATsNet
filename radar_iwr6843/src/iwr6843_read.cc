@@ -29,7 +29,7 @@ Reader_IWR6843::Reader_IWR6843(const char *cli_sock, const speed_t cli_baudrate,
 Reader_IWR6843::~Reader_IWR6843() {
   char stop_cmd[] = "sensorStop\n";
   WriteToSerial(cli_fd_, stop_cmd, sizeof(stop_cmd));
-  std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
   close(cli_fd_);
   close(data_fd_);
@@ -140,9 +140,11 @@ int Reader_IWR6843::OpenSerial(const char *sock, const speed_t baudrate,
   int serial_port = open(sock, O_RDWR | O_NOCTTY);
   if (serial_port < 0) {
     printf("Error %i from open: %s\n", errno, strerror(errno));
+    exit(1);
   }
   if (tcgetattr(serial_port, tty) < 0) {
     printf("Error %i from tcsetattr: %s\n", errno, strerror(errno));
+    exit(1);
   }
 
   tty->c_cflag &= ~PARENB; // Clear parity bit, disabling parity (most common)
@@ -181,6 +183,7 @@ int Reader_IWR6843::OpenSerial(const char *sock, const speed_t baudrate,
 
   if (tcsetattr(serial_port, TCSANOW, tty) != 0) {
     printf("Error %i from tcsetattr: %s\n", errno, strerror(errno));
+    exit(1);
   }
   // Required for tcflush
   sleep(2);
@@ -191,6 +194,7 @@ int Reader_IWR6843::OpenSerial(const char *sock, const speed_t baudrate,
 
   if (tcflush(serial_port, TCIOFLUSH) != 0) {
     printf("Error %i from tcflush: %s\n", errno, strerror(errno));
+    exit(1);
   }
 
   return serial_port;
@@ -205,6 +209,7 @@ int Reader_IWR6843::ReadFromSerial(const int fd, char *buf, size_t buf_size) {
   int len = read(fd, buf, buf_size);
   if (len < 0) {
     printf("Error %i from read: %s\n", errno, strerror(errno));
+    exit(1);
   }
   return len;
 }

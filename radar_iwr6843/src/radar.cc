@@ -83,6 +83,7 @@ int main(int argc, char *argv[]) {
       //   raw_ress.Clear();
       // }
     }
+    std::cout << "Read" << std::endl;
     std::this_thread::sleep_for(std::chrono::microseconds(10));
   }
 
