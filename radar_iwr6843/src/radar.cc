@@ -3,12 +3,19 @@
 #include <memory>
 #include <thread>
 
+#include <experimental/filesystem>
+
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/text_format.h>
 
 #include "data_collector/include/data_collector.h"
 #include "iwr6843_read.h"
 #include "proto_gen/radar.pb.h"
+
+const char *kTTY1 = "/dev/ttyACM0";
+const char *kTTY2 = "/dev/ttyACM1";
+const char *kTTY3 = "/dev/ttyACM2";
+const char *kTTY4 = "/dev/ttyACM3";
 
 int main(int argc, char *argv[]) {
   if (argc < 4) {
@@ -25,11 +32,16 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
+  const char *control_port = kTTY1;
+  const char *data_port = kTTY2;
+  if (!std::experimental::filesystem::exists(control_port)) {
+    control_port = kTTY3;
+    data_port = kTTY4;
+  }
   std::shared_ptr<data_collecter::DataCollector> collector(
       new data_collecter::DataCollector(argv[1], port));
 
-  radar::Reader_IWR6843 reader("/dev/ttyACM0", B115200, "/dev/ttyACM1",
-                               B921600);
+  radar::Reader_IWR6843 reader(control_port, B115200, data_port, B921600);
   reader.Setup(conf.conf().c_str());
 
   int32_t seq = 0;
