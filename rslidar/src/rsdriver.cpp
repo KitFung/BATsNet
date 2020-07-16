@@ -196,11 +196,13 @@ bool rslidarDriver::poll(void) { // Allocate a new shared pointer for zero-copy
   scan.set_seq(seq);
   scan.set_timestamp(scan.packet(scan.packet_size() - 1).timestamp());
   seq++;
+  auto data_str = scan.SerializeAsString();
   bool flag = collector_->SendData(output_packets_topic_.c_str(),
-                                   scan.SerializeAsString().c_str());
+                                   data_str.c_str(), data_str.size());
   // std::cout << scan.packet_size() << "|" << config_.npackets << std::endl;
   // std::cout << "Send Data to " << output_packets_topic_
-  //           << "  size: " << scan.SerializeAsString().size() << " ret: " << flag
+  //           << "  size: " << scan.SerializeAsString().size() << " ret: " <<
+  //           flag
   //           << std::endl;
   return true;
 }
@@ -213,8 +215,9 @@ void rslidarDriver::difopPoll(void) {
     difop_packet.Clear();
     int rc = difop_input_->getPacket(&difop_packet, config_.time_offset);
     if (rc == 0) {
-      collector_->SendData(output_difop_topic_.c_str(),
-                           difop_packet.SerializeAsString().c_str());
+      auto data_str = difop_packet.SerializeAsString();
+      collector_->SendData(output_difop_topic_.c_str(), data_str.c_str(),
+                           data_str.size());
     }
     if (rc < 0)
       return; // end of file reached?
