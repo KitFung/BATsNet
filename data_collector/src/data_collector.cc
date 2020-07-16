@@ -24,4 +24,9 @@ bool DataCollector::SendData(const char *topic, const char *data) {
   return (ret == MOSQ_ERR_SUCCESS);
 }
 
+bool DataCollector::SendData(const char *topic, const char *data,
+                             const int len) {
+  int ret = publish(NULL, topic, len, data, params_.qos, false);
+  return (ret == MOSQ_ERR_SUCCESS);
+}
 } // namespace data_collecter

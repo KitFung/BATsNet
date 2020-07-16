@@ -52,8 +52,8 @@ int main(int argc, char *argv[]) {
     if (conf.read_parsed()) {
       radar::RadarResult res;
       reader.ReadParsedRadarResult(&res);
-      collector->SendData(conf.write_topic().c_str(),
-                          res.SerializeAsString().c_str());
+      auto str = res.SerializeAsString();
+      collector->SendData(conf.write_topic().c_str(), str.c_str(), str.size());
 
       // auto res = ress.add_parsed_result();
 
@@ -69,8 +69,8 @@ int main(int argc, char *argv[]) {
     } else {
       radar::RawRadarResult res;
       reader.ReadRawRadarResult(&res);
-      collector->SendData(conf.write_topic().c_str(),
-                          res.SerializeAsString().c_str());
+      auto str = res.SerializeAsString();
+      collector->SendData(conf.write_topic().c_str(), str.c_str(), str.size());
 
       // auto res = raw_ress.add_result();
       // reader.ReadRawRadarResult(res);

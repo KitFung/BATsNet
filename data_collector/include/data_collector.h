@@ -25,6 +25,7 @@ public:
   // void on_publish(int mid);
 
   bool SendData(const char *topic, const char *data);
+  bool SendData(const char *topic, const char *data, const int len);
 
 private:
   std::string host_;
