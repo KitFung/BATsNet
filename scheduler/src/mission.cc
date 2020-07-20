@@ -1,6 +1,7 @@
 #include "include/mission.h"
 
 #include <errno.h>
+#include <fcntl.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,6 +29,7 @@ bool Mission::SetupCommunToScheduler() {
               << std::endl;
     return false;
   }
+  fcntl(client_sock_, F_SETFL, O_NONBLOCK);
   sockaddr_un addr;
   addr.sun_family = AF_UNIX;
   strncpy(addr.sun_path, kSchedulerSock, sizeof(addr.sun_path));
@@ -64,7 +66,52 @@ bool Mission::RegisterMission() {
     std::cerr << "Error while sending setting" << std::endl;
     return false;
   }
+
+  // Need to wait until have success
+  int timeout = 10;
+  while (timeout-- > 0) {
+    if (registered_) {
+      return true;
+    }
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+  }
+
+  return false;
+}
+
+bool Mission::WaitForTheStart() {
+  std::unique_lock<std::mutex> lk(start_mutex_);
+  while (!start_cv_.wait_for(lk, std::chrono::minutes(10),
+                             [&] { return can_start_ == true; })) {
+    std::cout << "Still waiting for start" << std::endl;
+  }
+  can_start_ = false;
+
   return true;
+}
+
+bool Mission::NotifyMissionDone() {
+  int max_retry = 3;
+  MissionDone packet;
+  char buf[sizeof(MissionDone)];
+  memcpy(buf, &packet, sizeof(MissionDone));
+
+  send(client_sock_, buf, sizeof(MissionDone), 0);
+  while (done_msg_.get() == nullptr) {
+    if (!setting_.repeated_mission()) {
+      std::cerr << "Fast exit the task " << name_ << std::endl;
+      return false;
+    }
+    max_retry--;
+    if (max_retry <= 0) {
+      std::cerr << "Force exit the task " << name_ << std::endl;
+      return false;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  }
+
+  bool keep_going = !(done_msg_->could_exit);
+  return keep_going;
 }
 
 void Mission::ControlLoop() {
@@ -83,13 +130,17 @@ void Mission::ControlLoop() {
         ping_fail_ = 0;
       }
       // Handle all the recv
-      int recvn = recv(client_sock_, recv_buf, recv_buf_size, 0);
-      if (recvn == -1) {
-        std::cerr << "Lost connection to scheduler" << std::endl;
-        running_ = false;
-        return;
+      while (true) {
+        int recvn = recv(client_sock_, recv_buf, recv_buf_size, 0);
+        if (recvn == -1) {
+          std::cerr << "Lost connection to scheduler" << std::endl;
+          running_ = false;
+          return;
+        } else if (recvn == 0) {
+          break;
+        }
+        HandleRecv(recv_buf, recvn);
       }
-      HandleRecv(recv_buf, recvn);
       std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
   });
@@ -101,23 +152,29 @@ void Mission::HandleRecv(const char *buf, const int len) {
 
   switch (flag) {
   case CTL_FLAG::PONG:
+    last_pong_ = std::chrono::system_clock::now().time_since_epoch().count();
     break;
 
   case CTL_FLAG::REGISTER_ACK:
+    registered_ = true;
     break;
 
   case CTL_FLAG::ALLOW_START:
+    can_start_ = true;
+    start_cv_.notify_one();
     break;
 
-  case CTL_FLAG::MISSION_DONE_ACK:
+  case CTL_FLAG::MISSION_DONE_ACK: {
+    MissionDoneAck ack;
+    memcpy(&ack, buf, sizeof(MissionDoneAck));
+    done_msg_ = std::make_shared<MissionDoneAck>(ack);
     break;
+  }
 
   default:
     break;
   }
 }
-
-bool Mission::WaitForTheStart() {}
 
 void Mission::OverallFlow() {
   if (!SetupCommunToScheduler()) {
@@ -137,6 +194,7 @@ void Mission::OverallFlow() {
     exit(1);
   }
   CoreFlow();
+  Destroy();
 }
 
 void Mission::CoreFlow() {

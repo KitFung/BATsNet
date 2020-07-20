@@ -2,6 +2,8 @@
 
 #include <atomic>
 #include <chrono>
+#include <condition_variable>
+#include <memory>
 #include <string>
 #include <thread>
 
@@ -40,9 +42,17 @@ private:
   pid_t pid_;
   std::string name_;
   MissionSetting setting_;
+  std::mutex start_mutex_;
+  std::condition_variable start_cv_;
+  std::atomic<bool> can_start_ = {false};
 
   bool running_ = true;
   int ping_fail_ = 0;
+  bool registered_ = false;
+  double last_pong_ = 0;
+
+  std::shared_ptr<MissionDoneAck> done_msg_;
+
   int client_sock_;
   std::thread ping_pong_;
   PingPacket ping_packet_;
