@@ -48,6 +48,7 @@ struct RegisterPacket {
 };
 struct RegisterAck {
   CTL_FLAG flag = CTL_FLAG::REGISTER_ACK;
+  bool success;
 };
 
 struct AllowStartPacket {

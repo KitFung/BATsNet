@@ -20,9 +20,9 @@ message Duration {
 
 message ResourceRequirement {
   required int32 cpu_core = 1[default = 1];
-  optional Duration cpu_time = 2;
+  // optional Duration cpu_time = 2;
   required int32 gpu_core = 3[default = 1];
-  optional Duration gpu_time = 4;
+  // optional Duration gpu_time = 4;
   // Unit: MB
   optional int32 memory = 5;
   // Unit: MB
@@ -31,17 +31,19 @@ message ResourceRequirement {
 
 message MissionSetting {
   required string name = 1;
-  required int32 priotiry = 2 [default = 1];
+  required bool real_time = 2;
+  required int32 priotiry = 3 [default = 1];
   // -1 mean forever. unit is s
-  required int32 max_runtime = 3[default = -1];
+  required int32 max_runtime = 4[default = -1];
   // The start time of the mission
   // If None, start immediately
-  optional Time schedule_time = 4;
-  required bool repeated_mission = 5[default = false];
-  optional ResourceRequirement requirement = 6;
+  optional Time schedule_time = 5;
+  required bool repeated_mission = 6[default = false];
+  optional int32 repeated_interval_sec = 7;
+  optional ResourceRequirement requirement = 8;
 }
 
 message SchedulerSetting {
   optional int32 max_concurrent_mission = 1;
-  optional int32 schedule_freq = 2;
+  optional int32 schedule_freq_ms = 2;
 }
