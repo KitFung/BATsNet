@@ -13,8 +13,6 @@
 
 namespace scheduler {
 
-const char *kSchedulerSock = "/opt/missions/scheduler.sock";
-
 Mission::Mission(const std::string &name, const MissionSetting &setting)
     : name_(name), setting_(setting) {
   pid_ = getpid();
@@ -41,13 +39,16 @@ bool Mission::SetupCommunToScheduler() {
     return false;
   }
 
+  // Setup the loop
+  ControlLoop();
+
   // REGISTER
   if (!RegisterMission()) {
     std::cerr << "[" << setting_.name() << "] Failed to register" << std::endl;
     return false;
   }
 
-  ControlLoop();
+  return true;
 }
 
 bool Mission::RegisterMission() {

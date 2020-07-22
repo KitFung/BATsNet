@@ -1,6 +1,22 @@
-#include <iostream>
+#include <string.h>
 
+#include <functional>
+#include <iostream>
+#include <string>
+#include <unordered_map>
 namespace scheduler {
+const char *kSchedulerSock = "/opt/missions/scheduler.sock";
+
+enum MISSION_STATE {
+  NOT_INIT = 0,
+  INIT = 1,
+  REGISTERED = 2,
+  PENDING = 3,
+  WAITING_START_CONFIRM = 4,
+  RUNNING = 5,
+  DONE = 6
+};
+
 enum class CTL_FLAG {
   // Check alive between scheduler and mission
   PING = 0,
@@ -50,5 +66,39 @@ struct MissionDoneAck {
   uint32_t seq;
   bool could_exit;
 };
+
+constexpr int kConnectionBufSize = 2048;
+struct ClientConnection {
+  int sock;
+  char buf[kConnectionBufSize];
+  int buf_len = 0;
+
+  std::string name;
+  MISSION_STATE state = NOT_INIT;
+  double last_ping_recv = -1;
+};
+
+class PacketHandleMap {
+public:
+  void RegisterHandle(const CTL_FLAG flag,
+                      std::function<bool(ClientConnection *)> cb);
+  bool HandleIfPossible(ClientConnection *);
+
+private:
+  std::unordered_map<CTL_FLAG, std::function<bool(ClientConnection *)>>
+      handles_;
+};
+
+#define REGISTER_PACKET_HANDLE(handle_map, flag, PacketType, fn)               \
+  handle_map.RegisterHandle(flag, [&](ClientConnection *conn) {                \
+    if (conn->buf_len < sizeof(PacketType)) {                                  \
+      return false;                                                            \
+    }                                                                          \
+    PacketType packet;                                                         \
+    memcpy(&packet, conn->buf, sizeof(PacketType));                            \
+    fn(&packet, conn);                                                         \
+    conn->buf_len -= sizeof(PacketType);                                       \
+    memmove(conn->buf, conn->buf + sizeof(PacketType), conn->buf_len);         \
+  });
 
 } // namespace scheduler

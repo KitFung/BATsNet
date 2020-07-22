@@ -12,11 +12,15 @@ find_package(Protobuf REQUIRED)
 # endif()
 
 include_directories(${Protobuf_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 EXEC_PROGRAM(protoc 
   ARGS -I=${CMAKE_CURRENT_SOURCE_DIR}/proto
        --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
        ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto)
+
+add_library(mission SHARED src/mission.cc)
+target_link_libraries(mission stdc++fs)
 
 # file(GLOB SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen/*.cc)
 # file(GLOB CONF_FILES ${CMAKE_CURRENT_SOURCE_DIR}/conf/*)
