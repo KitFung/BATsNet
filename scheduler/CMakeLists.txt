@@ -19,8 +19,11 @@ EXEC_PROGRAM(protoc
        --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
        ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto)
 
-add_library(mission SHARED src/mission.cc)
-target_link_libraries(mission stdc++fs)
+add_library(mission_lib SHARED src/mission.cc)
+target_link_libraries(mission_lib stdc++fs)
+
+add_library(scheduler_lib SHARED src/scheduler.cc)
+target_link_libraries(scheduler_lib stdc++fs)
 
 # file(GLOB SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen/*.cc)
 # file(GLOB CONF_FILES ${CMAKE_CURRENT_SOURCE_DIR}/conf/*)

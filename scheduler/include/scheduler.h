@@ -63,11 +63,9 @@ struct PendingCompare {
 
 struct WaitingCompare {
   bool operator()(const ScheduledMission &m1, const ScheduledMission &m2) {
-    return m1.priority < m2.priority;
+    return m1.priority > m2.priority;
   }
 };
-
-constexpr int kSchedulerIntervalMs = 100;
 
 class Scheduler {
 public:
@@ -89,6 +87,7 @@ private:
 
   // The scheduling
   void TimeLoop();
+  bool AbleToSelect(const ScheduledMission &mission) const;
   void TrySelectWaitingMission();
   void AddRunningMission(const ScheduledMission &mission);
   void ReleaseMissionResource(const ScheduledMission &mission);

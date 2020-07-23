@@ -14,7 +14,8 @@ enum MISSION_STATE {
   PENDING = 3,
   WAITING_START_CONFIRM = 4,
   RUNNING = 5,
-  DONE = 6
+  DONE = 6,
+  ABORT = 7
 };
 
 enum class CTL_FLAG {
@@ -100,6 +101,7 @@ private:
     fn(&packet, conn);                                                         \
     conn->buf_len -= sizeof(PacketType);                                       \
     memmove(conn->buf, conn->buf + sizeof(PacketType), conn->buf_len);         \
+    return true;                                                               \
   });
 
 } // namespace scheduler
