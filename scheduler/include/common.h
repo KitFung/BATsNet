@@ -5,7 +5,7 @@
 #include <string>
 #include <unordered_map>
 namespace scheduler {
-const char *kSchedulerSock = "/opt/missions/scheduler.sock";
+static const char *kSchedulerSock = "/opt/missions/scheduler.sock";
 
 enum MISSION_STATE {
   NOT_INIT = 0,

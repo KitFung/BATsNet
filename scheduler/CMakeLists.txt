@@ -4,6 +4,7 @@ project( scheduler VERSION 0.0.1 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 find_package(Protobuf REQUIRED)
 # find_package(Boost 1.40 COMPONENTS algorithm REQUIRED)
@@ -19,11 +20,17 @@ EXEC_PROGRAM(protoc
        --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
        ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto)
 
+add_library(scheduler_common STATIC src/common.cc proto_gen/scheduler.pb.cc)
+target_link_libraries(scheduler_common ${Protobuf_LIBRARIES})
+
 add_library(mission_lib SHARED src/mission.cc)
-target_link_libraries(mission_lib stdc++fs)
+target_link_libraries(mission_lib ${Protobuf_LIBRARIES} stdc++fs scheduler_common)
 
 add_library(scheduler_lib SHARED src/scheduler.cc)
-target_link_libraries(scheduler_lib stdc++fs)
+target_link_libraries(scheduler_lib ${Protobuf_LIBRARIES} stdc++fs scheduler_common)
+
+add_executable(scheduler src/scheduler_app.cc)
+target_link_libraries(scheduler scheduler_lib ${Protobuf_LIBRARIES} stdc++fs)
 
 # file(GLOB SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen/*.cc)
 # file(GLOB CONF_FILES ${CMAKE_CURRENT_SOURCE_DIR}/conf/*)

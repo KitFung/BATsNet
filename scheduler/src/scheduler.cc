@@ -94,8 +94,10 @@ void Scheduler::Setup() {
     });
   }
   mission_thread_ = std::thread([this]() { ListenToMissions(); });
-  schedule_thread_ = std::thread([this]() { TimeLoop(); });
+  // schedule_thread_ = std::thread([this]() { TimeLoop(); });
 }
+
+void Scheduler::Run() { TimeLoop(); }
 
 void Scheduler::ListenToMissions() {
   while (running_) {
