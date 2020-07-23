@@ -32,12 +32,16 @@ private:
   bool WaitForTheStart();
   bool NotifyMissionDone();
 
+  void Handle(PongPacket *packet, ClientConnection *conn);
+  void Handle(RegisterAck *packet, ClientConnection *conn);
+  void Handle(AllowStartPacket *packet, ClientConnection *conn);
+  void Handle(MissionDoneAck *packet, ClientConnection *conn);
+
   void OverallFlow();
   void CoreFlow();
 
   void PingPong();
   void ControlLoop();
-  void HandleRecv(const char *buf, const int len);
 
   pid_t pid_;
   std::string name_;
@@ -56,6 +60,8 @@ private:
   int client_sock_;
   std::thread ping_pong_;
   PingPacket ping_packet_;
+  ClientConnection conn_;
+  PacketHandleMap handle_map_;
 };
 
 } // namespace scheduler

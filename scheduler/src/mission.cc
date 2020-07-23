@@ -18,7 +18,17 @@ Mission::Mission(const std::string &name, const MissionSetting &setting)
   pid_ = getpid();
 }
 
-void Mission::Run() { OverallFlow(); }
+void Mission::Run() {
+  REGISTER_PACKET_HANDLE(handle_map_, CTL_FLAG::PONG, PongPacket, this->Handle);
+  REGISTER_PACKET_HANDLE(handle_map_, CTL_FLAG::REGISTER_ACK, RegisterAck,
+                         this->Handle);
+  REGISTER_PACKET_HANDLE(handle_map_, CTL_FLAG::ALLOW_START, AllowStartPacket,
+                         this->Handle);
+  REGISTER_PACKET_HANDLE(handle_map_, CTL_FLAG::MISSION_DONE_ACK,
+                         MissionDoneAck, this->Handle);
+
+  OverallFlow();
+}
 
 bool Mission::SetupCommunToScheduler() {
   int client_sock_ = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -112,6 +122,7 @@ bool Mission::NotifyMissionDone() {
   }
 
   bool keep_going = !(done_msg_->could_exit);
+  done_msg_.reset();
   return keep_going;
 }
 
@@ -131,50 +142,41 @@ void Mission::ControlLoop() {
         ping_fail_ = 0;
       }
       // Handle all the recv
-      while (true) {
-        int recvn = recv(client_sock_, recv_buf, recv_buf_size, 0);
-        if (recvn == -1) {
-          std::cerr << "Lost connection to scheduler" << std::endl;
-          running_ = false;
-          return;
-        } else if (recvn == 0) {
-          break;
-        }
-        HandleRecv(recv_buf, recvn);
+      int read_len = recv(conn_.sock + conn_.buf_len, conn_.buf,
+                          kConnectionBufSize - conn_.buf_len, 0);
+      conn_.buf_len += read_len;
+      if (read_len > 0) {
+        handle_map_.HandleIfPossible(&conn_);
+      } else if (read_len == -1) {
+        std::cerr << "Lost connection to scheduler" << std::endl;
+        running_ = false;
+        return;
       }
-      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
   });
 }
 
-void Mission::HandleRecv(const char *buf, const int len) {
-  CTL_FLAG flag;
-  memcpy(&flag, buf, sizeof(CTL_FLAG));
+void Mission::Handle(PongPacket *packet, ClientConnection *conn) {
+  conn->last_ping_recv =
+      std::chrono::system_clock::now().time_since_epoch().count();
+}
 
-  switch (flag) {
-  case CTL_FLAG::PONG:
-    last_pong_ = std::chrono::system_clock::now().time_since_epoch().count();
-    break;
-
-  case CTL_FLAG::REGISTER_ACK:
+void Mission::Handle(RegisterAck *packet, ClientConnection *conn) {
+  if (packet->success) {
     registered_ = true;
-    break;
-
-  case CTL_FLAG::ALLOW_START:
-    can_start_ = true;
-    start_cv_.notify_one();
-    break;
-
-  case CTL_FLAG::MISSION_DONE_ACK: {
-    MissionDoneAck ack;
-    memcpy(&ack, buf, sizeof(MissionDoneAck));
-    done_msg_ = std::make_shared<MissionDoneAck>(ack);
-    break;
+  } else {
+    std::cerr << "Failed to register mission" << std::endl;
+    exit(1);
   }
+}
+void Mission::Handle(AllowStartPacket *packet, ClientConnection *conn) {
+  can_start_ = true;
+  start_cv_.notify_one();
+}
 
-  default:
-    break;
-  }
+void Mission::Handle(MissionDoneAck *packet, ClientConnection *conn) {
+  done_msg_ = std::make_shared<MissionDoneAck>(*packet);
 }
 
 void Mission::OverallFlow() {

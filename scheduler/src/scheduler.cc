@@ -63,6 +63,7 @@ void Scheduler::Setup() {
             q.pop();
             int read_len = recv(conn->sock + conn->buf_len, conn->buf,
                                 kConnectionBufSize - conn->buf_len, 0);
+            conn->buf_len += read_len;
             if (read_len > 0) {
               handle_map_.HandleIfPossible(conn.get());
             }
@@ -177,6 +178,9 @@ void Scheduler::HandleAllowStartAck(AllowStartAck *packet,
 void Scheduler::HandleMissionDone(MissionDone *packet, ClientConnection *conn) {
   assert(conn->state == MISSION_STATE::RUNNING);
   conn->state = MISSION_STATE::DONE;
+  MissionDoneAck ack;
+  ack.could_exit = !running_mission_[conn->name].setting.repeated_mission();
+  send(conn->sock, &ack, sizeof(MissionDoneAck), 0);
 }
 
 bool Scheduler::IsStillValid(const ClientConnection *conn) const {
