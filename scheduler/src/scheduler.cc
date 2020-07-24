@@ -152,7 +152,7 @@ void Scheduler::HandleRegisterPacket(RegisterPacket *packet,
 
     ScheduledMission mission;
     mission.name = name;
-    mission.priority = setting.priotiry();
+    mission.priority = setting.priority();
     mission.start_s_in_day = 0;
     if (setting.has_schedule_time()) {
       const auto &t = setting.schedule_time();

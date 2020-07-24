@@ -9,4 +9,4 @@ add_subdirectory(rslidar)
 add_subdirectory(radar_iwr6843)
 add_subdirectory(server_side)
 
-install(FILES env.sh DESTINATION /opt/drivers/)
+install(FILES env.sh DESTINATION /opt/aiot/drivers/)

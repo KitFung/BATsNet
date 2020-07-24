@@ -27,7 +27,7 @@ target_include_directories(rslidar_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} data_c
 add_executable(rslidar src/main.cc)
 target_link_libraries(rslidar rslidar_lib ${Boost_LIBRARIES} ${Protobuf_LIBRARIES} data_collector)
 
-install(DIRECTORY DESTINATION /opt/drivers/bin)
-install(DIRECTORY conf/ DESTINATION /opt/drivers/conf/rslidar)
-install(TARGETS rslidar DESTINATION /opt/drivers/bin)
+install(DIRECTORY DESTINATION /opt/aiot/drivers/bin)
+install(DIRECTORY conf/ DESTINATION /opt/aiot/drivers/conf/rslidar)
+install(TARGETS rslidar DESTINATION /opt/aiot/drivers/bin)
 install(FILES systemd/rslidar.service DESTINATION /etc/systemd/system)

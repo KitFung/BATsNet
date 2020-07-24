@@ -80,7 +80,7 @@ std::vector<std::string> DataUploadMission::ReadFileListInSubFolder(
   if (!fs::exists(sub_folder)) {
     return files;
   }
-  BufFolderLock lock(sub_folder);
+  // BufFolderLock lock(sub_folder);
 
   for (const auto &p : fs::directory_iterator(sub_folder)) {
     auto path = fs::path(p);

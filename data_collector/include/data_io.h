@@ -5,7 +5,8 @@
 
 namespace data_collector {
 
-constexpr char kBufFolder[] = "/opt/buf";
+constexpr char kBufFolder[] = "/opt/aiot/buf";
+constexpr char kBufTmpFolder[] = "/opt/aiot/bufTmp";
 
 class BufFolderLock {
 public:
@@ -24,6 +25,8 @@ public:
 
 private:
   std::fstream f_;
+  std::string fname_;
+  std::string sfname_;
 };
 
 class BufReader {

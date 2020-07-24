@@ -3,10 +3,10 @@ Description=The driver of radar iwr6843
 After=network.target
 
 [Service]
-EnvironmentFile=/opt/drivers/env.sh
+EnvironmentFile=/opt/aiot/drivers/env.sh
 Type=simple
-WorkingDirectory=/opt/drivers
-ExecStart=/opt/drivers/bin/radar_iwr6843 $BROKER_HOST $BROKER_PORT /opt/drivers/conf/radar/radar.pb.txt
+WorkingDirectory=/opt/aiot/drivers
+ExecStart=/opt/aiot/drivers/bin/radar_iwr6843 $BROKER_HOST $BROKER_PORT /opt/drivers/conf/radar/radar.pb.txt
 Restart=always
 RestartSec=1
 User=nvidia

@@ -7,7 +7,8 @@
 #include <string>
 #include <unordered_map>
 namespace scheduler {
-static const char *kSchedulerSock = "/opt/missions/scheduler.sock";
+constexpr char kSchedulerSockDir[] = "/opt/aiot/missions";
+constexpr char kSchedulerSock[] = "/opt/aiot/missions/scheduler.sock";
 
 enum MISSION_STATE {
   NOT_INIT = 0,

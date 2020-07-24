@@ -54,12 +54,18 @@ BufWriter::BufWriter(const std::string &topic) {
       w = '#';
     }
   }
-  std::string name = std::string(kBufFolder) + "/" + folder_name;
+  std::string sname = std::string(kBufFolder) + "/" + folder_name;
+  fs::create_directories(sname);
+  std::string name = std::string(kBufTmpFolder) + "/" + folder_name;
   fs::create_directories(name);
-  std::string fname = name + "/" + GetNowTimeStramp();
-  f_ = std::fstream(fname, std::ios::binary | std::ios::in);
+  fname_ = name + "/" + GetNowTimeStramp();
+  sfname_ = sname + "/" + GetNowTimeStramp();
+  f_ = std::fstream(fname_, std::ios::binary | std::ios::in);
 }
-BufWriter::~BufWriter() { f_.close(); }
+BufWriter::~BufWriter() {
+  f_.close();
+  fs::rename(fname_, sfname_);
+}
 
 void BufWriter::Write(const char *buf, const int len) {
   int32_t wlen = len;

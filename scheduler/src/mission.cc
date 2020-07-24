@@ -9,13 +9,17 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
+#include <experimental/filesystem>
 #include <iostream>
+
+namespace fs = std::experimental::filesystem;
 
 namespace scheduler {
 
 Mission::Mission(const std::string &name, const MissionSetting &setting)
     : name_(name), setting_(setting) {
   pid_ = getpid();
+  fs::create_directories(kSchedulerSockDir);
 }
 
 void Mission::Run() {

@@ -32,7 +32,7 @@ message ResourceRequirement {
 message MissionSetting {
   required string name = 1;
   required bool real_time = 2;
-  required int32 priotiry = 3 [default = 1];
+  required int32 priority = 3 [default = 1];
   // -1 mean forever. unit is s
   required int32 max_runtime = 4[default = -1];
   // The start time of the mission
