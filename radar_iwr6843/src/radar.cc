@@ -38,8 +38,8 @@ int main(int argc, char *argv[]) {
     control_port = kTTY3;
     data_port = kTTY4;
   }
-  std::shared_ptr<data_collecter::DataCollector> collector(
-      new data_collecter::DataCollector(argv[1], port));
+  std::shared_ptr<data_collector::DataCollector> collector(
+      new data_collector::DataCollector(argv[1], port));
 
   radar::Reader_IWR6843 reader(control_port, B115200, data_port, B921600);
   reader.Setup(conf.conf().c_str());

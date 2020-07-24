@@ -25,6 +25,12 @@ target_link_libraries(scheduler_common ${Protobuf_LIBRARIES})
 
 add_library(mission_lib SHARED src/mission.cc)
 target_link_libraries(mission_lib ${Protobuf_LIBRARIES} stdc++fs scheduler_common)
+target_include_directories(mission_lib
+  PUBLIC
+    ./
+  PRIVATE
+    src
+)
 
 add_library(scheduler_lib SHARED src/scheduler.cc)
 target_link_libraries(scheduler_lib ${Protobuf_LIBRARIES} stdc++fs scheduler_common)

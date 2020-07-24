@@ -1,3 +1,5 @@
+#pragma once
+
 #include <unistd.h>
 
 #include <atomic>
@@ -14,7 +16,8 @@ namespace scheduler {
 class Mission {
 public:
   Mission(const std::string &name, const MissionSetting &setting);
-  virtual ~Mission() { running_ = false; }
+  // virtual ~Mission() { running_ = false; }
+  ~Mission() { running_ = false; }
   void Run();
 
 protected:

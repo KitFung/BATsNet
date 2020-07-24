@@ -52,7 +52,7 @@ private:
     int cut_angle;
   } config_;
 
-  boost::shared_ptr<data_collecter::DataCollector> collector_;
+  boost::shared_ptr<data_collector::DataCollector> collector_;
   boost::shared_ptr<Input> msop_input_;
   boost::shared_ptr<Input> difop_input_;
 

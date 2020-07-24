@@ -4,25 +4,32 @@ project( data_collector VERSION 0.0.1 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # find_package(Protobuf REQUIRED)
 
 # include_directories(${Protobuf_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS EXPORT_MACRO DLL_EXPORT foo.proto)
 
+add_library(data_io STATIC src/data_io.cc)
+target_link_libraries(data_io stdc++fs)
+
 add_library(data_collector SHARED src/data_collector.cc)
 set_target_properties(data_collector PROPERTIES VERSION ${PROJECT_VERSION})
-# target_link_libraries(data_collector ${Protobuf_LIBRARIES})
-target_link_libraries(data_collector mosquitto mosquittopp)
+target_link_libraries(data_collector mosquitto mosquittopp data_io)
 target_compile_options (data_collector PRIVATE -Wno-deprecated-declarations)
+
+add_library(data_upload_mission_lib STATIC src/data_upload_mission.cc)
+target_link_libraries(data_upload_mission_lib data_collector mission_lib)
 
 target_include_directories(data_collector
   PUBLIC
-    include
+    ./
   PRIVATE
     src
-)
+  )
 
-install(TARGETS data_collector DESTINATION /usr/local/lib)
+  install(TARGETS data_collector DESTINATION /usr/local/lib)

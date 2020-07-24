@@ -1,17 +1,26 @@
+#pragma once
+
 #include <cstring>
 
+#include <memory>
 #include <string>
+#include <unordered_map>
 
 #include <mosquitto.h>
 #include <mosquittopp.h>
 
-namespace data_collecter {
+#include "include/data_io.h"
+
+namespace data_collector {
+enum class CollectMode { REAL_TIME_UPLOAD = 1, LOCAL_SAVE = 2 };
+
 struct DataCollectParams {
   bool auto_adjust;
   int min_freq = 1; // hz
   int keep_alive = 60;
   double adjust_step = 0.2;
   int qos = 1; // 0 = try once, 1 = retry 1 max, 2 retry until done
+  CollectMode mode = CollectMode::REAL_TIME_UPLOAD;
 };
 
 class DataCollector : public mosqpp::mosquittopp {
@@ -31,5 +40,8 @@ private:
   std::string host_;
   int port_;
   DataCollectParams params_;
+
+  std::unordered_map<std::string, std::shared_ptr<BufWriter>> writer_;
+  std::unordered_map<std::string, int> buf_cnt_;
 };
-} // namespace data_collecter
+} // namespace data_collector

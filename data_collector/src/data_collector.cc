@@ -1,6 +1,6 @@
 #include "data_collector.h"
 
-namespace data_collecter {
+namespace data_collector {
 DataCollector::DataCollector(const char *host, int port,
                              DataCollectParams *params) {
   mosqpp::lib_init();
@@ -20,13 +20,21 @@ DataCollector::~DataCollector() {
 }
 
 bool DataCollector::SendData(const char *topic, const char *data) {
-  int ret = publish(NULL, topic, strlen(data), data, params_.qos, false);
-  return (ret == MOSQ_ERR_SUCCESS);
+  return SendData(topic, data, strlen(data));
 }
 
 bool DataCollector::SendData(const char *topic, const char *data,
                              const int len) {
-  int ret = publish(NULL, topic, len, data, params_.qos, false);
-  return (ret == MOSQ_ERR_SUCCESS);
+  if (params_.mode == CollectMode::REAL_TIME_UPLOAD) {
+    int ret = publish(NULL, topic, len, data, params_.qos, false);
+    return (ret == MOSQ_ERR_SUCCESS);
+  } else {
+    if (buf_cnt_[topic] % 100 == 0) {
+      writer_[topic].reset(new BufWriter(topic));
+      buf_cnt_[topic] = 0;
+    }
+    writer_[topic]->Write(data, len);
+    buf_cnt_[topic] += 1;
+  }
 }
-} // namespace data_collecter
+} // namespace data_collector

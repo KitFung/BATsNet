@@ -20,8 +20,8 @@ static const unsigned int BLOCKS_ONE_CHANNEL_PER_PKT = 12;
 
 rslidarDriver::rslidarDriver(const char *broker_ip, const int broker_port,
                              Conf conf) {
-  collector_ = boost::shared_ptr<data_collecter::DataCollector>(
-      new data_collecter::DataCollector(broker_ip, broker_port));
+  collector_ = boost::shared_ptr<data_collector::DataCollector>(
+      new data_collector::DataCollector(broker_ip, broker_port));
 
   // get model name, validate string, determine packet rate
   config_.model = conf.model();
