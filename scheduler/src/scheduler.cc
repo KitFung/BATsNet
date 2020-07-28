@@ -18,6 +18,10 @@ Scheduler::Scheduler(const SchedulerSetting &setting) : setting_(setting) {
   // @TODO(someone) Add gpu support
   resource_tbl_.total_gpu = resource_tbl_.avail_gpu = 0;
 }
+Scheduler::~Scheduler() {
+  close(epoll_fd_);
+  close(server_sock_);
+}
 
 void Scheduler::Setup() {
   std::cout << "[Scheduler] Setup" << std::endl;
@@ -52,79 +56,90 @@ void Scheduler::Setup() {
   REGISTER_PACKET_HANDLE(handle_map_, CTL_FLAG::MISSION_DONE, MissionDone,
                          this->HandleMissionDone);
 
-  for (int i = 0; i < kMissionWorker; ++i) {
-    mission_workers_[i] = std::thread([this, i]() {
-      while (running_) {
-        {
-          std::queue<std::shared_ptr<ClientConnection>> q;
-          {
-            std::lock_guard<std::mutex> lock(mtxs_[i]);
-            q.swap(mission_socks_[i]);
-          }
-
-          std::queue<std::shared_ptr<ClientConnection>> still_alive;
-          while (!q.empty()) {
-            auto conn = q.front();
-            q.pop();
-            int read_len = recv(conn->sock + conn->buf_len, conn->buf,
-                                kConnectionBufSize - conn->buf_len, 0);
-            if (read_len > 0) {
-              conn->buf_len += read_len;
-            }
-            while (conn->buf_len && handle_map_.HandleIfPossible(conn.get()))
-              ;
-            // if (IsStillValid(conn.get()) && read_len != -1) {
-            if (IsStillValid(conn.get())) {
-              still_alive.emplace(conn);
-            } else {
-              close(conn->sock);
-              unregistered_conns_.erase(conn.get());
-              if (!conn->name.empty()) {
-                conn_map_.erase(conn->name);
-                std::cout << "erase: " << conn->name << std::endl;
-              }
-              std::cerr << "A mission is erased" << std::endl;
-              // @TODO. Handle the invalid mission in schedule
-            }
-          }
-
-          {
-            std::lock_guard<std::mutex> lock(mtxs_[i]);
-            while (!still_alive.empty()) {
-              mission_socks_[i].emplace(still_alive.front());
-              still_alive.pop();
-            }
-          }
-        }
-        std::this_thread::sleep_for(
-            std::chrono::milliseconds(setting_.schedule_freq_ms()));
-      }
-    });
-  }
+  epoll_fd_ = epoll_create(kMaxEvents);
+  accept_thread_ = std::thread([this]() { AcceptConnections(); });
   mission_thread_ = std::thread([this]() { ListenToMissions(); });
+  for (int i = 0; i < kMissionWorker; ++i) {
+    mission_workers_[i] = std::thread([this]() { MissionLoop(); });
+  }
   // schedule_thread_ = std::thread([this]() { TimeLoop(); });
   std::cout << "[Scheduler] Listening to : " << kSchedulerSock << std::endl;
 }
 
 void Scheduler::Run() { TimeLoop(); }
 
-void Scheduler::ListenToMissions() {
+void Scheduler::AcceptConnections() {
   while (running_) {
-    int wi = 0;
     int sock = accept(server_sock_, nullptr, nullptr);
     if (sock != -1) {
       {
-        std::lock_guard<std::mutex> lock(mtxs_[wi]);
         auto conn = std::shared_ptr<ClientConnection>(new ClientConnection);
         conn->sock = sock;
         conn->state = MISSION_STATE::NOT_INIT;
         conn->last_ping_recv =
             std::chrono::system_clock::now().time_since_epoch().count();
-        mission_socks_[wi].emplace(conn);
-        unregistered_conns_[conn.get()] = conn;
+        {
+          std::lock_guard<std::mutex> l1(all_conns_mtx_);
+          all_conns_[conn->sock] = conn;
+        }
+        epoll_event ev;
+        ev.data.fd = sock;
+        ev.events = EPOLLIN | EPOLLET;
+        epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, sock, &ev);
+
         std::cout << "[Scheduler] New Mission" << std::endl;
       }
-      wi = (wi + 1) % kMissionWorker;
+    }
+  }
+}
+
+void Scheduler::ListenToMissions() {
+  epoll_event events[kMaxEvents];
+  while (running_) {
+    int nfds = epoll_wait(epoll_fd_, events, kMaxEvents, 5000);
+    std::lock_guard<std::mutex> l1(need_handle_mtx_);
+    std::lock_guard<std::mutex> l2(all_conns_mtx_);
+    std::cout << "[Scheduler] New Event: " << nfds << std::endl;
+    for (int i = 0; i < nfds; ++i) {
+      need_handle_sock_.emplace(all_conns_[events[i].data.fd]);
+    }
+  }
+}
+
+void Scheduler::MissionLoop() {
+  std::queue<int> tasks;
+  while (running_) {
+    {
+      std::shared_ptr<ClientConnection> conn;
+      if (!need_handle_sock_.empty()) {
+        std::lock_guard<std::mutex> lock(need_handle_mtx_);
+        conn = need_handle_sock_.front();
+        need_handle_sock_.pop();
+      }
+      if (!conn) {
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds(setting_.schedule_freq_ms()));
+        continue;
+      }
+      std::cout << "Handle a Mission Recv" << std::endl;
+      int read_len = recv(conn->sock + conn->buf_len, conn->buf,
+                          kConnectionBufSize - conn->buf_len, 0);
+      if (read_len > 0) {
+        conn->buf_len += read_len;
+      }
+      while (conn->buf_len && handle_map_.HandleIfPossible(conn.get()))
+        ;
+      if (!IsStillValid(conn.get())) {
+        epoll_ctl(epoll_fd_, EPOLL_CTL_DEL, conn->sock, nullptr);
+        std::lock_guard<std::mutex> l1(all_conns_mtx_);
+        std::lock_guard<std::mutex> l2(conn_map_mtx_);
+        all_conns_.erase(conn->sock);
+        if (!conn->name.empty()) {
+          conn_map_.erase(conn->name);
+        }
+        std::cout << "[Scheduler] Remove Invalid " << conn->sock << " "
+                  << conn->name << std::endl;
+      }
     }
   }
 }
@@ -156,9 +171,13 @@ void Scheduler::HandleRegisterPacket(RegisterPacket *packet,
     conn->state = MISSION_STATE::ABORT;
   } else {
     // Accept
+    {
+      std::lock_guard<std::mutex> l1(all_conns_mtx_);
+      std::lock_guard<std::mutex> l2(conn_map_mtx_);
+      conn_map_[name] = all_conns_[conn->sock];
+    }
+
     conn->name = name;
-    conn_map_[name] = unregistered_conns_[conn];
-    unregistered_conns_.erase(conn);
 
     ScheduledMission mission;
     mission.name = name;
@@ -171,14 +190,13 @@ void Scheduler::HandleRegisterPacket(RegisterPacket *packet,
     }
     mission.real_time = setting.real_time();
     mission.setting.CopyFrom(setting);
-    std::cout << "setting repeated: " << setting.repeated_mission()
-              << std::endl;
     pending_mission_.emplace(mission);
 
     // Response
     ack.success = true;
     send(conn->sock, &ack, sizeof(RegisterAck), 0);
     conn->state = MISSION_STATE::REGISTERED;
+    std::cout << "[Scheduler] Registered " << name << std::endl;
   }
 }
 
@@ -196,9 +214,7 @@ void Scheduler::HandleMissionDone(MissionDone *packet, ClientConnection *conn) {
   conn->state = MISSION_STATE::DONE;
   ack.could_exit = !running_mission_[conn->name].setting.repeated_mission();
   send(conn->sock, &ack, sizeof(MissionDoneAck), 0);
-  std::cout << conn->name << " "
-            << running_mission_[conn->name].setting.repeated_mission()
-            << std::endl;
+  std::cout << "[Scheduler] Running " << conn->name << std::endl;
 }
 
 bool Scheduler::IsStillValid(const ClientConnection *conn) const {
@@ -245,13 +261,12 @@ void Scheduler::TimeLoop() {
       if (conn_map_[k]->state == MISSION_STATE::DONE) {
         remove_mission.emplace_back(k);
         ReleaseMissionResource(m);
-        std::cout << "Release: " << k << std::endl;
       }
     }
+
     for (const auto &k : remove_mission) {
       auto m = running_mission_[k];
       running_mission_.erase(k);
-      std::cout << "remove: " << k << std::endl;
       if (m.setting.repeated_mission()) {
         if (m.setting.has_repeated_mission()) {
           if (m.setting.has_repeated_interval_sec()) {
@@ -261,11 +276,10 @@ void Scheduler::TimeLoop() {
           }
         }
         pending_mission_.emplace(m);
+        std::cout << "[Scheduler] Reschedule " << k << std::endl;
       } else {
-        std::cout << "m.setting.repeated_mission(): "
-                  << m.setting.repeated_mission() << std::endl;
         conn_map_.erase(k);
-        std::cout << "erase: " << k << std::endl;
+        std::cout << "[Scheduler] Erase" << k << std::endl;
       }
     }
     // At mid night, should reduce the start sec of all mission in q

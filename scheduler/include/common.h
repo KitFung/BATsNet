@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string.h>
+#include <unistd.h>
 
 #include <functional>
 #include <iostream>
@@ -74,7 +75,12 @@ struct MissionDoneAck {
 
 constexpr int kConnectionBufSize = 1 << 16;
 struct ClientConnection {
-  int sock;
+  ~ClientConnection() {
+    if (sock > 0) {
+      close(sock);
+    }
+  }
+  int sock = 0;
   char buf[kConnectionBufSize];
   int buf_len = 0;
 

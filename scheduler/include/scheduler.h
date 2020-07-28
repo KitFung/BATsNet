@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/epoll.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -82,12 +83,16 @@ struct WaitingCompare {
 class Scheduler {
 public:
   Scheduler(const SchedulerSetting &setting);
+  ~Scheduler();
   void Setup();
   void Run();
 
 private:
   // Interactive to Mission
+  void AcceptConnections();
   void ListenToMissions();
+  void MissionLoop();
+
   void HandlePingPacket(PingPacket *packet, ClientConnection *conn);
   void HandleRegisterPacket(RegisterPacket *packet, ClientConnection *conn);
   void HandleAllowStartAck(AllowStartAck *packet, ClientConnection *conn);
@@ -108,12 +113,23 @@ private:
   int server_sock_;
   SchedulerSetting setting_;
 
+  static constexpr int kMaxEvents = 1024;
+  int epoll_fd_;
+
+  std::thread accept_thread_;
   std::thread mission_thread_;
+
   std::array<std::thread, kMissionWorker> mission_workers_;
   std::array<std::queue<std::shared_ptr<ClientConnection>>, kMissionWorker>
       mission_socks_;
-  std::unordered_map<ClientConnection *, std::shared_ptr<ClientConnection>>
-      unregistered_conns_;
+
+  std::mutex need_handle_mtx_;
+  std::queue<std::shared_ptr<ClientConnection>> need_handle_sock_;
+
+  std::mutex all_conns_mtx_;
+  std::unordered_map<int, std::shared_ptr<ClientConnection>> all_conns_;
+  // The register conn
+  std::mutex conn_map_mtx_;
   std::unordered_map<std::string, std::shared_ptr<ClientConnection>> conn_map_;
   std::array<std::mutex, kMissionWorker> mtxs_;
   PacketHandleMap handle_map_;
@@ -121,6 +137,7 @@ private:
   std::thread schedule_thread_;
   ResourceTable resource_tbl_;
   std::mutex mission_lock_;
+
   // The mission that should not start yet
   std::priority_queue<ScheduledMission, std::vector<ScheduledMission>,
                       PendingCompare>
