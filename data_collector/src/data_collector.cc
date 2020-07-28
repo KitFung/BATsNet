@@ -1,5 +1,6 @@
 #include "data_collector.h"
 
+#include <iostream>
 namespace data_collector {
 DataCollector::DataCollector(const char *host, int port,
                              DataCollectParams *params) {
@@ -15,7 +16,7 @@ DataCollector::DataCollector(const char *host, int port,
 }
 
 DataCollector::~DataCollector() {
-  loop_stop();
+  loop_stop(true);
   mosqpp::lib_cleanup();
 }
 
@@ -35,6 +36,7 @@ bool DataCollector::SendData(const char *topic, const char *data,
     }
     writer_[topic]->Write(data, len);
     buf_cnt_[topic] += 1;
+    return true;
   }
 }
 } // namespace data_collector

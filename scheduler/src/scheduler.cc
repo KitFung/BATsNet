@@ -20,6 +20,7 @@ Scheduler::Scheduler(const SchedulerSetting &setting) : setting_(setting) {
 }
 
 void Scheduler::Setup() {
+  std::cout << "[Scheduler] Setup" << std::endl;
   server_sock_ = socket(AF_UNIX, SOCK_STREAM, 0);
   if (server_sock_ == -1) {
     perror("Fail in create server sock");
@@ -35,6 +36,10 @@ void Scheduler::Setup() {
   if (bind(server_sock_, reinterpret_cast<sockaddr *>(&addr), sizeof(addr)) ==
       -1) {
     perror("Fail to bind the address");
+    exit(1);
+  }
+  if (listen(server_sock_, 100) < 0) {
+    perror("Fail to Listen");
     exit(1);
   }
 
@@ -63,18 +68,20 @@ void Scheduler::Setup() {
             q.pop();
             int read_len = recv(conn->sock + conn->buf_len, conn->buf,
                                 kConnectionBufSize - conn->buf_len, 0);
-            conn->buf_len += read_len;
             if (read_len > 0) {
-              handle_map_.HandleIfPossible(conn.get());
+              conn->buf_len += read_len;
             }
-
-            if (IsStillValid(conn.get()) && read_len != -1) {
+            while (conn->buf_len && handle_map_.HandleIfPossible(conn.get()))
+              ;
+            // if (IsStillValid(conn.get()) && read_len != -1) {
+            if (IsStillValid(conn.get())) {
               still_alive.emplace(conn);
             } else {
               close(conn->sock);
               unregistered_conns_.erase(conn.get());
               if (!conn->name.empty()) {
                 conn_map_.erase(conn->name);
+                std::cout << "erase: " << conn->name << std::endl;
               }
               std::cerr << "A mission is erased" << std::endl;
               // @TODO. Handle the invalid mission in schedule
@@ -96,6 +103,7 @@ void Scheduler::Setup() {
   }
   mission_thread_ = std::thread([this]() { ListenToMissions(); });
   // schedule_thread_ = std::thread([this]() { TimeLoop(); });
+  std::cout << "[Scheduler] Listening to : " << kSchedulerSock << std::endl;
 }
 
 void Scheduler::Run() { TimeLoop(); }
@@ -109,11 +117,12 @@ void Scheduler::ListenToMissions() {
         std::lock_guard<std::mutex> lock(mtxs_[wi]);
         auto conn = std::shared_ptr<ClientConnection>(new ClientConnection);
         conn->sock = sock;
-        conn->state = MISSION_STATE::INIT;
+        conn->state = MISSION_STATE::NOT_INIT;
         conn->last_ping_recv =
             std::chrono::system_clock::now().time_since_epoch().count();
         mission_socks_[wi].emplace(conn);
         unregistered_conns_[conn.get()] = conn;
+        std::cout << "[Scheduler] New Mission" << std::endl;
       }
       wi = (wi + 1) % kMissionWorker;
     }
@@ -147,6 +156,7 @@ void Scheduler::HandleRegisterPacket(RegisterPacket *packet,
     conn->state = MISSION_STATE::ABORT;
   } else {
     // Accept
+    conn->name = name;
     conn_map_[name] = unregistered_conns_[conn];
     unregistered_conns_.erase(conn);
 
@@ -160,6 +170,9 @@ void Scheduler::HandleRegisterPacket(RegisterPacket *packet,
           t.second() + t.minute() * 60 + t.hour() * 60 * 60;
     }
     mission.real_time = setting.real_time();
+    mission.setting.CopyFrom(setting);
+    std::cout << "setting repeated: " << setting.repeated_mission()
+              << std::endl;
     pending_mission_.emplace(mission);
 
     // Response
@@ -177,10 +190,15 @@ void Scheduler::HandleAllowStartAck(AllowStartAck *packet,
 
 void Scheduler::HandleMissionDone(MissionDone *packet, ClientConnection *conn) {
   assert(conn->state == MISSION_STATE::RUNNING);
-  conn->state = MISSION_STATE::DONE;
+  std::lock_guard<std::mutex> lock(mission_lock_);
+
   MissionDoneAck ack;
+  conn->state = MISSION_STATE::DONE;
   ack.could_exit = !running_mission_[conn->name].setting.repeated_mission();
   send(conn->sock, &ack, sizeof(MissionDoneAck), 0);
+  std::cout << conn->name << " "
+            << running_mission_[conn->name].setting.repeated_mission()
+            << std::endl;
 }
 
 bool Scheduler::IsStillValid(const ClientConnection *conn) const {
@@ -217,33 +235,23 @@ void Scheduler::TimeLoop() {
     }
     // Update Waiting
     TrySelectWaitingMission();
-    // Update Pre Running
-    {
-      std::vector<std::string> updated_mission_name;
-      for (const auto &itr : pre_running_mission_) {
-        if (conn_map_[itr.first]->state == MISSION_STATE::RUNNING) {
-          running_mission_[itr.first] = itr.second;
-          updated_mission_name.emplace_back(itr.first);
-        }
-      }
-      for (const auto &k : updated_mission_name) {
-        pre_running_mission_.erase(k);
-      }
-    }
 
     // Update Running
+    std::lock_guard<std::mutex> lock(mission_lock_);
     std::vector<std::string> remove_mission;
     for (const auto &itr : running_mission_) {
       auto &k = itr.first;
       auto &m = itr.second;
       if (conn_map_[k]->state == MISSION_STATE::DONE) {
-        ReleaseMissionResource(m);
         remove_mission.emplace_back(k);
+        ReleaseMissionResource(m);
+        std::cout << "Release: " << k << std::endl;
       }
     }
     for (const auto &k : remove_mission) {
       auto m = running_mission_[k];
       running_mission_.erase(k);
+      std::cout << "remove: " << k << std::endl;
       if (m.setting.repeated_mission()) {
         if (m.setting.has_repeated_mission()) {
           if (m.setting.has_repeated_interval_sec()) {
@@ -254,7 +262,10 @@ void Scheduler::TimeLoop() {
         }
         pending_mission_.emplace(m);
       } else {
+        std::cout << "m.setting.repeated_mission(): "
+                  << m.setting.repeated_mission() << std::endl;
         conn_map_.erase(k);
+        std::cout << "erase: " << k << std::endl;
       }
     }
     // At mid night, should reduce the start sec of all mission in q
@@ -298,11 +309,11 @@ void Scheduler::TrySelectWaitingMission() {
 }
 
 void Scheduler::AddRunningMission(const ScheduledMission &mission) {
+  std::lock_guard<std::mutex> lock(mission_lock_);
   resource_tbl_.avail_core -= mission.setting.requirement().cpu_core();
   resource_tbl_.avail_mem -= mission.setting.requirement().memory();
   conn_map_[mission.name]->state = MISSION_STATE::WAITING_START_CONFIRM;
-  pre_running_mission_[mission.name] = mission;
-
+  running_mission_[mission.name] = mission;
   AllowStartPacket packet;
   send(conn_map_[mission.name]->sock, &packet, sizeof(AllowStartPacket), 0);
 }

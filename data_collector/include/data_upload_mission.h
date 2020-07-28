@@ -15,6 +15,7 @@ public:
   DataUploadMission(const std::string &name,
                     const scheduler::MissionSetting &setting, const char *host,
                     const int port);
+  virtual ~DataUploadMission() {}
 
 private:
   bool Init() override;

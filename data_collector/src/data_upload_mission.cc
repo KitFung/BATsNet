@@ -47,7 +47,7 @@ bool DataUploadMission::Start() {
       reader.RemoveBuf();
     }
   }
-
+  std::cout << "[DataUploadMission] Done" << std::endl;
   return true;
 }
 bool DataUploadMission::Stop() { return true; }

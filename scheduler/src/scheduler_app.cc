@@ -29,6 +29,7 @@ int main(int argc, char *argv[]) {
   }
 
   scheduler::Scheduler scheduler(setting);
+  scheduler.Setup();
   scheduler.Run();
   return 0;
 }

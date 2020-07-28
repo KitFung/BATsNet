@@ -17,7 +17,16 @@ class Mission {
 public:
   Mission(const std::string &name, const MissionSetting &setting);
   // virtual ~Mission() { running_ = false; }
-  ~Mission() { running_ = false; }
+  virtual ~Mission() {
+    running_ = false;
+
+    if (ping_pong_.joinable()) {
+      ping_pong_.join();
+    }
+    if (control_.joinable()) {
+      control_.join();
+    }
+  }
   void Run();
 
 protected:
@@ -60,8 +69,8 @@ private:
 
   std::shared_ptr<MissionDoneAck> done_msg_;
 
-  int client_sock_;
   std::thread ping_pong_;
+  std::thread control_;
   PingPacket ping_packet_;
   ClientConnection conn_;
   PacketHandleMap handle_map_;

@@ -72,7 +72,7 @@ struct MissionDoneAck {
   bool could_exit;
 };
 
-constexpr int kConnectionBufSize = 2048;
+constexpr int kConnectionBufSize = 1 << 16;
 struct ClientConnection {
   int sock;
   char buf[kConnectionBufSize];

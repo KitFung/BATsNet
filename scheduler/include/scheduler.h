@@ -50,6 +50,16 @@ struct ResourceTable {
 };
 
 struct ScheduledMission {
+  ScheduledMission() {}
+  ScheduledMission(const ScheduledMission &other) { *this = other; }
+  ScheduledMission &operator=(const ScheduledMission &other) {
+    name = other.name;
+    priority = other.priority;
+    start_s_in_day = other.start_s_in_day;
+    real_time = other.real_time;
+    setting.CopyFrom(other.setting);
+    return *this;
+  }
   std::string name;
   int priority = 0;
   int start_s_in_day = 0;
@@ -72,11 +82,11 @@ struct WaitingCompare {
 class Scheduler {
 public:
   Scheduler(const SchedulerSetting &setting);
+  void Setup();
   void Run();
 
 private:
   // Interactive to Mission
-  void Setup();
   void ListenToMissions();
   void HandlePingPacket(PingPacket *packet, ClientConnection *conn);
   void HandleRegisterPacket(RegisterPacket *packet, ClientConnection *conn);
@@ -110,6 +120,7 @@ private:
 
   std::thread schedule_thread_;
   ResourceTable resource_tbl_;
+  std::mutex mission_lock_;
   // The mission that should not start yet
   std::priority_queue<ScheduledMission, std::vector<ScheduledMission>,
                       PendingCompare>
@@ -119,7 +130,6 @@ private:
                       WaitingCompare>
       waiting_mission_;
   // The started mission
-  std::unordered_map<std::string, ScheduledMission> pre_running_mission_;
   std::unordered_map<std::string, ScheduledMission> running_mission_;
 };
 

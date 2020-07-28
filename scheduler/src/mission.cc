@@ -35,20 +35,20 @@ void Mission::Run() {
 }
 
 bool Mission::SetupCommunToScheduler() {
-  int client_sock_ = socket(AF_UNIX, SOCK_STREAM, 0);
-  if (client_sock_ == -1) {
+  conn_.sock = socket(AF_UNIX, SOCK_STREAM, 0);
+  if (conn_.sock == -1) {
     std::cerr << "[" << setting_.name() << "] Failed to create client sock"
               << std::endl;
     return false;
   }
-  fcntl(client_sock_, F_SETFL, O_NONBLOCK);
   sockaddr_un addr;
   addr.sun_family = AF_UNIX;
   strncpy(addr.sun_path, kSchedulerSock, sizeof(addr.sun_path));
 
-  if (connect(client_sock_, reinterpret_cast<sockaddr *>(&addr),
-              sizeof(addr)) == -1) {
-    std::cerr << "[" << setting_.name() << "] Failed to connect to scheduler"
+  if (connect(conn_.sock, reinterpret_cast<sockaddr *>(&addr), sizeof(addr)) ==
+      -1) {
+    std::cerr << "[" << setting_.name()
+              << "] Failed to connect to scheduler sock: " << addr.sun_path
               << std::endl;
     return false;
   }
@@ -62,6 +62,7 @@ bool Mission::SetupCommunToScheduler() {
     return false;
   }
 
+  std::cout << "[" << setting_.name() << "] setup sock" << std::endl;
   return true;
 }
 
@@ -74,10 +75,7 @@ bool Mission::RegisterMission() {
   auto setting_str = setting_.SerializeAsString();
   r_pack.setting_len = setting_str.size();
   memcpy(r_pack.setting, setting_str.data(), setting_str.size());
-
-  char send_buf[1024];
-  memcpy(send_buf, &r_pack, sizeof(r_pack));
-  if (send(client_sock_, send_buf, sizeof(r_pack), 0) == -1) {
+  if (send(conn_.sock, &r_pack, sizeof(r_pack), 0) == -1) {
     std::cerr << "Error while sending setting" << std::endl;
     return false;
   }
@@ -102,16 +100,17 @@ bool Mission::WaitForTheStart() {
   }
   can_start_ = false;
 
+  AllowStartAck ack;
+  send(conn_.sock, &ack, sizeof(AllowStartAck), 0);
+
   return true;
 }
 
 bool Mission::NotifyMissionDone() {
   int max_retry = 3;
+  std::cout << "Send Mission Done" << std::endl;
   MissionDone packet;
-  char buf[sizeof(MissionDone)];
-  memcpy(buf, &packet, sizeof(MissionDone));
-
-  send(client_sock_, buf, sizeof(MissionDone), 0);
+  send(conn_.sock, &packet, sizeof(MissionDone), 0);
   while (done_msg_.get() == nullptr) {
     if (!setting_.repeated_mission()) {
       std::cerr << "Fast exit the task " << name_ << std::endl;
@@ -122,7 +121,7 @@ bool Mission::NotifyMissionDone() {
       std::cerr << "Force exit the task " << name_ << std::endl;
       return false;
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10000));
   }
 
   bool keep_going = !(done_msg_->could_exit);
@@ -132,33 +131,54 @@ bool Mission::NotifyMissionDone() {
 
 void Mission::ControlLoop() {
   ping_pong_ = std::thread([&]() {
-    constexpr size_t msg_size = sizeof(PingPacket);
-    char send_buf[msg_size];
-    constexpr size_t recv_buf_size = 2048;
-    char recv_buf[recv_buf_size];
-    memcpy(send_buf, &ping_packet_, sizeof(PingPacket));
+    double send_time = -1;
     while (running_) {
       // Ping
-      if (send(client_sock_, send_buf, msg_size, 0) == -1) {
-        std::cerr << "Error while sending ping" << std::endl;
-        ping_fail_++;
-      } else {
-        ping_fail_ = 0;
+      if (conn_.last_ping_recv > send_time || send_time < 0) {
+        send_time = std::chrono::system_clock::now().time_since_epoch().count();
+        if (send(conn_.sock, &ping_packet_, sizeof(PingPacket), 0) == -1) {
+          std::cerr << "Error while sending ping | " << std::endl;
+          ping_fail_++;
+        } else {
+          ping_fail_ = 0;
+        }
       }
-      // Handle all the recv
-      int read_len = recv(conn_.sock + conn_.buf_len, conn_.buf,
-                          kConnectionBufSize - conn_.buf_len, 0);
-      conn_.buf_len += read_len;
-      if (read_len > 0) {
-        handle_map_.HandleIfPossible(&conn_);
-      } else if (read_len == -1) {
-        std::cerr << "Lost connection to scheduler" << std::endl;
-        running_ = false;
-        return;
-      }
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      std::this_thread::sleep_for(std::chrono::milliseconds(3000));
     }
   });
+  control_ = std::thread([&]() {
+    fd_set set;
+    struct timeval st_time;
+
+    st_time.tv_sec = 10;
+    st_time.tv_usec = 0;
+    FD_ZERO(&set);
+    FD_SET(conn_.sock, &set);
+    while (running_) {
+      int ret = select(conn_.sock + 1, &set, nullptr, nullptr, &st_time);
+      if (ret == 0) {
+        // printf("select timeout.\n");
+      } else if (ret < 0) {
+        perror("Select error");
+      } else if (ret == 1) {
+        if (FD_ISSET(conn_.sock, &set)) {
+          int read_len = recv(conn_.sock, conn_.buf + conn_.buf_len,
+                              kConnectionBufSize - conn_.buf_len, MSG_DONTWAIT);
+          if (read_len > 0) {
+            conn_.buf_len += read_len;
+            while (handle_map_.HandleIfPossible(&conn_))
+              ;
+          } else if (read_len == -1) {
+            perror("Failed to Read Msg");
+            running_ = false;
+            return;
+          }
+        }
+      }
+    }
+  });
+  // Make sure the ping is send before the later step
+  std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
 
 void Mission::Handle(PongPacket *packet, ClientConnection *conn) {
@@ -180,6 +200,7 @@ void Mission::Handle(AllowStartPacket *packet, ClientConnection *conn) {
 }
 
 void Mission::Handle(MissionDoneAck *packet, ClientConnection *conn) {
+  std::cout << "Mission Done Ack" << std::endl;
   done_msg_ = std::make_shared<MissionDoneAck>(*packet);
 }
 
@@ -187,11 +208,6 @@ void Mission::OverallFlow() {
   if (!SetupCommunToScheduler()) {
     std::cerr << "[" << setting_.name()
               << "] fail to setup connection to scheduler" << std::endl;
-    exit(1);
-  }
-  if (!RegisterMission()) {
-    std::cerr << "[" << setting_.name() << "] fail to Register Mission"
-              << std::endl;
     exit(1);
   }
   if (!Init()) {
