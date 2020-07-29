@@ -231,7 +231,7 @@ void Mission::CoreFlow() {
       std::cerr << "[" << setting_.name() << "] Problem while Start"
                 << std::endl;
     }
-
+    std::this_thread::sleep_for(std::chrono::seconds(10));
     std::cerr << "[" << setting_.name() << "] Stop" << std::endl;
     if (!Stop()) {
       std::cerr << "[" << setting_.name() << "] Problem while Start"

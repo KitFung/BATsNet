@@ -17,6 +17,7 @@
 #include <thread>
 #include <unordered_map>
 #include <unordered_set>
+#include <condition_variable>
 
 #include "include/common.h"
 #include "proto_gen/scheduler.pb.h"
@@ -130,6 +131,9 @@ private:
   ResourceTable resource_tbl_;
   std::mutex mission_lock_;
 
+  std::mutex need_handle_;
+  std::condition_variable cv_;
+
   // The mission that should not start yet
   std::mutex pending_mission_mtx_;
   std::priority_queue<ScheduledMission, std::vector<ScheduledMission>,
@@ -141,6 +145,8 @@ private:
       waiting_mission_;
   // The started mission
   std::unordered_map<std::string, ScheduledMission> running_mission_;
+
+  std::thread debug_thread_;
 };
 
 } // namespace scheduler

@@ -62,6 +62,17 @@ void Scheduler::Setup() {
   for (int i = 0; i < kMissionWorker; ++i) {
     mission_workers_[i] = std::thread([this]() { MissionLoop(); });
   }
+
+  debug_thread_ = std::thread([this]() {
+    while (running_) {
+      std::cout << "Conn Count: " << all_conns_.size()
+                << " | Name Count: " << nameset_.size()
+                << " | Pending Count: " << pending_mission_.size()
+                << " | Waiting Count: " << waiting_mission_.size()
+                << " | Running Count: " << running_mission_.size() << std::endl;
+      std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+    }
+  });
   // schedule_thread_ = std::thread([this]() { TimeLoop(); });
   std::cout << "[Scheduler] Listening to : " << kSchedulerSock << std::endl;
 }
@@ -102,6 +113,7 @@ void Scheduler::ListenToMissions() {
     for (int i = 0; i < nfds; ++i) {
       need_handle_sock_.emplace(static_cast<int>(events[i].data.fd));
     }
+    cv_.notify_all();
   }
 }
 
@@ -119,11 +131,15 @@ void Scheduler::MissionLoop() {
         }
       }
       if (!conn) {
-        std::this_thread::sleep_for(
-            std::chrono::milliseconds(setting_.schedule_freq_ms()));
+        std::unique_lock<std::mutex> lk(need_handle_mtx_);
+        cv_.wait_for(lk,
+                     std::chrono::milliseconds(setting_.schedule_freq_ms()));
         continue;
       }
       std::lock_guard<std::mutex> lock(conn->mtx);
+      if (conn->invalid) {
+        continue;
+      }
 
       int read_len = recv(conn->sock + conn->buf_len, conn->buf,
                           kConnectionBufSize - conn->buf_len, 0);
@@ -156,7 +172,7 @@ void Scheduler::HandlePingPacket(PingPacket *packet, ClientConnection *conn) {
       std::chrono::system_clock::now().time_since_epoch().count();
 
   PongPacket respond_pkt;
-  send(conn->sock, &respond_pkt, sizeof(PongPacket), 0);
+  send(conn->sock, &respond_pkt, sizeof(PongPacket), MSG_NOSIGNAL);
 }
 
 void Scheduler::HandleRegisterPacket(RegisterPacket *packet,
@@ -173,7 +189,7 @@ void Scheduler::HandleRegisterPacket(RegisterPacket *packet,
 
   auto RejectFn = [&]() {
     ack.success = false;
-    send(conn->sock, &ack, sizeof(RegisterAck), 0);
+    send(conn->sock, &ack, sizeof(RegisterAck), MSG_NOSIGNAL);
     conn->state = MISSION_STATE::ABORT;
   };
   // Reject of no name or repeated
@@ -204,7 +220,7 @@ void Scheduler::HandleRegisterPacket(RegisterPacket *packet,
 
   // Response
   ack.success = true;
-  send(conn->sock, &ack, sizeof(RegisterAck), 0);
+  send(conn->sock, &ack, sizeof(RegisterAck), MSG_NOSIGNAL);
   conn->state = MISSION_STATE::REGISTERED;
   std::cout << "[Scheduler] Registered " << name << std::endl;
 }
@@ -219,6 +235,7 @@ void Scheduler::HandleMissionDone(MissionDone *packet, ClientConnection *conn) {
   assert(conn->state == MISSION_STATE::RUNNING);
 
   MissionDoneAck ack;
+  std::cout << "[Scheduler] Receive Mission Done " << conn->name << std::endl;
   conn->state = MISSION_STATE::DONE;
   {
     std::lock_guard<std::mutex> lock(mission_lock_);
@@ -228,8 +245,7 @@ void Scheduler::HandleMissionDone(MissionDone *packet, ClientConnection *conn) {
       ack.could_exit = false;
     }
   }
-  send(conn->sock, &ack, sizeof(MissionDoneAck), 0);
-  std::cout << "[Scheduler] Running " << conn->name << std::endl;
+  send(conn->sock, &ack, sizeof(MissionDoneAck), MSG_NOSIGNAL);
 }
 
 bool Scheduler::IsStillValid(const ClientConnection *conn) const {
@@ -321,7 +337,6 @@ void Scheduler::TimeLoop() {
     std::this_thread::sleep_for(
         std::chrono::milliseconds(setting_.schedule_freq_ms()));
   }
-  std::cout << "End Time" << std::endl;
 }
 
 bool Scheduler::AbleToSelect(const ScheduledMission &mission) const {
@@ -368,7 +383,7 @@ void Scheduler::AddRunningMission(const ScheduledMission &mission) {
   std::cout << "[Scheduler] Add Running Mission " << mission.name << std::endl;
 
   AllowStartPacket packet;
-  send(mission.conn->sock, &packet, sizeof(AllowStartPacket), 0);
+  send(mission.conn->sock, &packet, sizeof(AllowStartPacket), MSG_NOSIGNAL);
 }
 
 void Scheduler::ReleaseMissionResource(const ScheduledMission &mission) {

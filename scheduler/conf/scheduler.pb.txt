@@ -1,1 +1,1 @@
-schedule_freq_ms: 500
+schedule_freq_ms: 100
