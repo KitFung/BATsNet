@@ -51,21 +51,12 @@ struct ResourceTable {
 };
 
 struct ScheduledMission {
-  ScheduledMission() {}
-  ScheduledMission(const ScheduledMission &other) { *this = other; }
-  ScheduledMission &operator=(const ScheduledMission &other) {
-    name = other.name;
-    priority = other.priority;
-    start_s_in_day = other.start_s_in_day;
-    real_time = other.real_time;
-    setting.CopyFrom(other.setting);
-    return *this;
-  }
   std::string name;
   int priority = 0;
   int start_s_in_day = 0;
   bool real_time = false;
   MissionSetting setting;
+  std::shared_ptr<ClientConnection> conn;
 };
 
 struct PendingCompare {
@@ -109,6 +100,10 @@ private:
   void AddRunningMission(const ScheduledMission &mission);
   void ReleaseMissionResource(const ScheduledMission &mission);
 
+  void AddPendingMission(ScheduledMission &&mission);
+  bool TryAddToNameSet(const std::string &name);
+  void RemoveFromNameSet(const std::string &name);
+
   bool running_ = true;
   int server_sock_;
   SchedulerSetting setting_;
@@ -120,25 +115,23 @@ private:
   std::thread mission_thread_;
 
   std::array<std::thread, kMissionWorker> mission_workers_;
-  std::array<std::queue<std::shared_ptr<ClientConnection>>, kMissionWorker>
-      mission_socks_;
 
   std::mutex need_handle_mtx_;
-  std::queue<std::shared_ptr<ClientConnection>> need_handle_sock_;
+  std::queue<int> need_handle_sock_;
 
   std::mutex all_conns_mtx_;
   std::unordered_map<int, std::shared_ptr<ClientConnection>> all_conns_;
   // The register conn
-  std::mutex conn_map_mtx_;
-  std::unordered_map<std::string, std::shared_ptr<ClientConnection>> conn_map_;
-  std::array<std::mutex, kMissionWorker> mtxs_;
-  PacketHandleMap handle_map_;
+  std::mutex nameset_mtx_;
+  std::unordered_set<std::string> nameset_;
 
+  PacketHandleMap handle_map_;
   std::thread schedule_thread_;
   ResourceTable resource_tbl_;
   std::mutex mission_lock_;
 
   // The mission that should not start yet
+  std::mutex pending_mission_mtx_;
   std::priority_queue<ScheduledMission, std::vector<ScheduledMission>,
                       PendingCompare>
       pending_mission_;

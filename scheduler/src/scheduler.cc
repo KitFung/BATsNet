@@ -98,10 +98,9 @@ void Scheduler::ListenToMissions() {
   while (running_) {
     int nfds = epoll_wait(epoll_fd_, events, kMaxEvents, 5000);
     std::lock_guard<std::mutex> l1(need_handle_mtx_);
-    std::lock_guard<std::mutex> l2(all_conns_mtx_);
-    std::cout << "[Scheduler] New Event: " << nfds << std::endl;
+    // std::cout << "[Scheduler] New Event: " << nfds << std::endl;
     for (int i = 0; i < nfds; ++i) {
-      need_handle_sock_.emplace(all_conns_[events[i].data.fd]);
+      need_handle_sock_.emplace(static_cast<int>(events[i].data.fd));
     }
   }
 }
@@ -111,32 +110,37 @@ void Scheduler::MissionLoop() {
   while (running_) {
     {
       std::shared_ptr<ClientConnection> conn;
-      if (!need_handle_sock_.empty()) {
+      {
         std::lock_guard<std::mutex> lock(need_handle_mtx_);
-        conn = need_handle_sock_.front();
-        need_handle_sock_.pop();
+        if (!need_handle_sock_.empty()) {
+          std::lock_guard<std::mutex> l2(all_conns_mtx_);
+          conn = all_conns_[need_handle_sock_.front()];
+          need_handle_sock_.pop();
+        }
       }
       if (!conn) {
         std::this_thread::sleep_for(
             std::chrono::milliseconds(setting_.schedule_freq_ms()));
         continue;
       }
-      std::cout << "Handle a Mission Recv" << std::endl;
+      std::lock_guard<std::mutex> lock(conn->mtx);
+
       int read_len = recv(conn->sock + conn->buf_len, conn->buf,
                           kConnectionBufSize - conn->buf_len, 0);
       if (read_len > 0) {
         conn->buf_len += read_len;
       }
+      // std::cout << "conn->buf_len: " << conn->buf_len << std::endl;
       while (conn->buf_len && handle_map_.HandleIfPossible(conn.get()))
         ;
       if (!IsStillValid(conn.get())) {
         epoll_ctl(epoll_fd_, EPOLL_CTL_DEL, conn->sock, nullptr);
-        std::lock_guard<std::mutex> l1(all_conns_mtx_);
-        std::lock_guard<std::mutex> l2(conn_map_mtx_);
-        all_conns_.erase(conn->sock);
-        if (!conn->name.empty()) {
-          conn_map_.erase(conn->name);
+        conn->invalid = true;
+        {
+          std::lock_guard<std::mutex> l1(all_conns_mtx_);
+          all_conns_.erase(conn->sock);
         }
+        RemoveFromNameSet(conn->name);
         std::cout << "[Scheduler] Remove Invalid " << conn->sock << " "
                   << conn->name << std::endl;
       }
@@ -164,40 +168,45 @@ void Scheduler::HandleRegisterPacket(RegisterPacket *packet,
 
   RegisterAck ack;
   auto name = setting.name();
-  if (name.empty() || conn_map_.find(name) != conn_map_.end()) {
-    // Reject
+
+  bool insert_succes = false;
+
+  auto RejectFn = [&]() {
     ack.success = false;
     send(conn->sock, &ack, sizeof(RegisterAck), 0);
     conn->state = MISSION_STATE::ABORT;
-  } else {
-    // Accept
-    {
-      std::lock_guard<std::mutex> l1(all_conns_mtx_);
-      std::lock_guard<std::mutex> l2(conn_map_mtx_);
-      conn_map_[name] = all_conns_[conn->sock];
-    }
-
-    conn->name = name;
-
-    ScheduledMission mission;
-    mission.name = name;
-    mission.priority = setting.priority();
-    mission.start_s_in_day = 0;
-    if (setting.has_schedule_time()) {
-      const auto &t = setting.schedule_time();
-      mission.start_s_in_day =
-          t.second() + t.minute() * 60 + t.hour() * 60 * 60;
-    }
-    mission.real_time = setting.real_time();
-    mission.setting.CopyFrom(setting);
-    pending_mission_.emplace(mission);
-
-    // Response
-    ack.success = true;
-    send(conn->sock, &ack, sizeof(RegisterAck), 0);
-    conn->state = MISSION_STATE::REGISTERED;
-    std::cout << "[Scheduler] Registered " << name << std::endl;
+  };
+  // Reject of no name or repeated
+  if (name.empty() || !TryAddToNameSet(name)) {
+    // Reject
+    RejectFn();
+    return;
   }
+
+  // Accept
+  // Construct mission
+  conn->name = name;
+  ScheduledMission mission;
+  mission.name = name;
+  mission.priority = setting.priority();
+  mission.start_s_in_day = 0;
+  if (setting.has_schedule_time()) {
+    const auto &t = setting.schedule_time();
+    mission.start_s_in_day = t.second() + t.minute() * 60 + t.hour() * 60 * 60;
+  }
+  mission.real_time = setting.real_time();
+  mission.setting.CopyFrom(setting);
+  {
+    std::lock_guard<std::mutex> l1(all_conns_mtx_);
+    mission.conn = all_conns_[conn->sock];
+  }
+  AddPendingMission(std::move(mission));
+
+  // Response
+  ack.success = true;
+  send(conn->sock, &ack, sizeof(RegisterAck), 0);
+  conn->state = MISSION_STATE::REGISTERED;
+  std::cout << "[Scheduler] Registered " << name << std::endl;
 }
 
 void Scheduler::HandleAllowStartAck(AllowStartAck *packet,
@@ -208,11 +217,17 @@ void Scheduler::HandleAllowStartAck(AllowStartAck *packet,
 
 void Scheduler::HandleMissionDone(MissionDone *packet, ClientConnection *conn) {
   assert(conn->state == MISSION_STATE::RUNNING);
-  std::lock_guard<std::mutex> lock(mission_lock_);
 
   MissionDoneAck ack;
   conn->state = MISSION_STATE::DONE;
-  ack.could_exit = !running_mission_[conn->name].setting.repeated_mission();
+  {
+    std::lock_guard<std::mutex> lock(mission_lock_);
+    if (running_mission_.find(conn->name) != running_mission_.end()) {
+      ack.could_exit = !running_mission_[conn->name].setting.repeated_mission();
+    } else {
+      ack.could_exit = false;
+    }
+  }
   send(conn->sock, &ack, sizeof(MissionDoneAck), 0);
   std::cout << "[Scheduler] Running " << conn->name << std::endl;
 }
@@ -235,18 +250,38 @@ int CurSecondInToday() {
   return s + m * 60 + h * 60 * 60;
 }
 
+void Scheduler::AddPendingMission(ScheduledMission &&mission) {
+  std::lock_guard<std::mutex> l1(pending_mission_mtx_);
+  pending_mission_.emplace(mission);
+}
+
+bool Scheduler::TryAddToNameSet(const std::string &name) {
+  std::lock_guard<std::mutex> l2(nameset_mtx_);
+  if (nameset_.find(name) == nameset_.end()) {
+    nameset_.insert(name);
+  }
+  return true;
+}
+void Scheduler::RemoveFromNameSet(const std::string &name) {
+  std::lock_guard<std::mutex> l2(nameset_mtx_);
+  nameset_.erase(name);
+}
+
 void Scheduler::TimeLoop() {
   while (running_) {
     // Update Pending
     auto now_s = CurSecondInToday();
-    while (!pending_mission_.empty() &&
-           now_s >= pending_mission_.top().start_s_in_day) {
-      auto m = pending_mission_.top();
-      pending_mission_.pop();
-      if (m.real_time) {
-        AddRunningMission(m);
-      } else {
-        waiting_mission_.emplace(m);
+    {
+      std::lock_guard<std::mutex> l1(pending_mission_mtx_);
+      while (!pending_mission_.empty() &&
+             now_s >= pending_mission_.top().start_s_in_day) {
+        auto m = pending_mission_.top();
+        pending_mission_.pop();
+        if (m.real_time) {
+          AddRunningMission(m);
+        } else {
+          waiting_mission_.emplace(m);
+        }
       }
     }
     // Update Waiting
@@ -258,7 +293,7 @@ void Scheduler::TimeLoop() {
     for (const auto &itr : running_mission_) {
       auto &k = itr.first;
       auto &m = itr.second;
-      if (conn_map_[k]->state == MISSION_STATE::DONE) {
+      if (m.conn->state == MISSION_STATE::DONE) {
         remove_mission.emplace_back(k);
         ReleaseMissionResource(m);
       }
@@ -266,7 +301,6 @@ void Scheduler::TimeLoop() {
 
     for (const auto &k : remove_mission) {
       auto m = running_mission_[k];
-      running_mission_.erase(k);
       if (m.setting.repeated_mission()) {
         if (m.setting.has_repeated_mission()) {
           if (m.setting.has_repeated_interval_sec()) {
@@ -275,17 +309,19 @@ void Scheduler::TimeLoop() {
             m.start_s_in_day = 0;
           }
         }
-        pending_mission_.emplace(m);
+        AddPendingMission(std::move(m));
         std::cout << "[Scheduler] Reschedule " << k << std::endl;
       } else {
-        conn_map_.erase(k);
-        std::cout << "[Scheduler] Erase" << k << std::endl;
+        RemoveFromNameSet(k);
+        std::cout << "[Scheduler] Erase " << k << std::endl;
       }
+      running_mission_.erase(k);
     }
     // At mid night, should reduce the start sec of all mission in q
     std::this_thread::sleep_for(
         std::chrono::milliseconds(setting_.schedule_freq_ms()));
   }
+  std::cout << "End Time" << std::endl;
 }
 
 bool Scheduler::AbleToSelect(const ScheduledMission &mission) const {
@@ -323,13 +359,16 @@ void Scheduler::TrySelectWaitingMission() {
 }
 
 void Scheduler::AddRunningMission(const ScheduledMission &mission) {
-  std::lock_guard<std::mutex> lock(mission_lock_);
+  std::lock_guard<std::mutex> l1(mission_lock_);
+  std::lock_guard<std::mutex> l2(mission.conn->mtx);
   resource_tbl_.avail_core -= mission.setting.requirement().cpu_core();
   resource_tbl_.avail_mem -= mission.setting.requirement().memory();
-  conn_map_[mission.name]->state = MISSION_STATE::WAITING_START_CONFIRM;
+  mission.conn->state = MISSION_STATE::WAITING_START_CONFIRM;
   running_mission_[mission.name] = mission;
+  std::cout << "[Scheduler] Add Running Mission " << mission.name << std::endl;
+
   AllowStartPacket packet;
-  send(conn_map_[mission.name]->sock, &packet, sizeof(AllowStartPacket), 0);
+  send(mission.conn->sock, &packet, sizeof(AllowStartPacket), 0);
 }
 
 void Scheduler::ReleaseMissionResource(const ScheduledMission &mission) {

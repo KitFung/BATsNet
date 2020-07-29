@@ -93,6 +93,7 @@ bool Mission::RegisterMission() {
 }
 
 bool Mission::WaitForTheStart() {
+  std::cerr << "[" << setting_.name() << "] Wait For The Start" << std::endl;
   std::unique_lock<std::mutex> lk(start_mutex_);
   while (!start_cv_.wait_for(lk, std::chrono::minutes(10),
                              [&] { return can_start_ == true; })) {
@@ -102,13 +103,11 @@ bool Mission::WaitForTheStart() {
 
   AllowStartAck ack;
   send(conn_.sock, &ack, sizeof(AllowStartAck), 0);
-
   return true;
 }
 
 bool Mission::NotifyMissionDone() {
   int max_retry = 3;
-  std::cout << "Send Mission Done" << std::endl;
   MissionDone packet;
   send(conn_.sock, &packet, sizeof(MissionDone), 0);
   while (done_msg_.get() == nullptr) {
@@ -121,7 +120,8 @@ bool Mission::NotifyMissionDone() {
       std::cerr << "Force exit the task " << name_ << std::endl;
       return false;
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+    std::unique_lock<std::mutex> lk(done_mtx_);
+    done_cv_.wait_for(lk, std::chrono::seconds(10));
   }
 
   bool keep_going = !(done_msg_->could_exit);
@@ -137,10 +137,9 @@ void Mission::ControlLoop() {
       if (conn_.last_ping_recv > send_time || send_time < 0) {
         send_time = std::chrono::system_clock::now().time_since_epoch().count();
         if (send(conn_.sock, &ping_packet_, sizeof(PingPacket), 0) == -1) {
-          std::cerr << "Error while sending ping | " << std::endl;
-          ping_fail_++;
-        } else {
-          ping_fail_ = 0;
+          std::cerr << "Error while sending ping" << std::endl;
+          running_ = false;
+          exit(1);
         }
       }
       std::this_thread::sleep_for(std::chrono::milliseconds(3000));
@@ -152,20 +151,23 @@ void Mission::ControlLoop() {
 
     st_time.tv_sec = 10;
     st_time.tv_usec = 0;
+    int cnt = 0;
     FD_ZERO(&set);
     FD_SET(conn_.sock, &set);
     while (running_) {
       int ret = select(conn_.sock + 1, &set, nullptr, nullptr, &st_time);
       if (ret == 0) {
-        // printf("select timeout.\n");
+        st_time.tv_sec = 10;
       } else if (ret < 0) {
         perror("Select error");
       } else if (ret == 1) {
         if (FD_ISSET(conn_.sock, &set)) {
           int read_len = recv(conn_.sock, conn_.buf + conn_.buf_len,
                               kConnectionBufSize - conn_.buf_len, MSG_DONTWAIT);
+          std::cout << "recv" << std::endl;
           if (read_len > 0) {
             conn_.buf_len += read_len;
+            std::cout << "conn_.buf_len: " << conn_.buf_len << std::endl;
             while (handle_map_.HandleIfPossible(&conn_))
               ;
           } else if (read_len == -1) {
@@ -197,11 +199,12 @@ void Mission::Handle(RegisterAck *packet, ClientConnection *conn) {
 void Mission::Handle(AllowStartPacket *packet, ClientConnection *conn) {
   can_start_ = true;
   start_cv_.notify_one();
+  std::cerr << "[" << setting_.name() << "] Recevive Start Allow" << std::endl;
 }
 
 void Mission::Handle(MissionDoneAck *packet, ClientConnection *conn) {
-  std::cout << "Mission Done Ack" << std::endl;
   done_msg_ = std::make_shared<MissionDoneAck>(*packet);
+  done_cv_.notify_all();
 }
 
 void Mission::OverallFlow() {
@@ -223,11 +226,13 @@ void Mission::OverallFlow() {
 void Mission::CoreFlow() {
   do {
     WaitForTheStart();
+    std::cerr << "[" << setting_.name() << "] Start" << std::endl;
     if (!Start()) {
       std::cerr << "[" << setting_.name() << "] Problem while Start"
                 << std::endl;
     }
 
+    std::cerr << "[" << setting_.name() << "] Stop" << std::endl;
     if (!Stop()) {
       std::cerr << "[" << setting_.name() << "] Problem while Start"
                 << std::endl;

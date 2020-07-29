@@ -63,10 +63,11 @@ private:
   std::atomic<bool> can_start_ = {false};
 
   bool running_ = true;
-  int ping_fail_ = 0;
   bool registered_ = false;
   double last_pong_ = 0;
 
+  std::mutex done_mtx_;
+  std::condition_variable done_cv_;
   std::shared_ptr<MissionDoneAck> done_msg_;
 
   std::thread ping_pong_;

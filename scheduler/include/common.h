@@ -5,6 +5,8 @@
 
 #include <functional>
 #include <iostream>
+#include <mutex>
+#include <condition_variable>
 #include <string>
 #include <unordered_map>
 namespace scheduler {
@@ -87,6 +89,9 @@ struct ClientConnection {
   std::string name;
   MISSION_STATE state = NOT_INIT;
   double last_ping_recv = -1;
+  std::mutex mtx;
+
+  bool invalid = false;
 };
 
 class PacketHandleMap {
