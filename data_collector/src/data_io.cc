@@ -60,7 +60,7 @@ BufWriter::BufWriter(const std::string &topic) {
   fs::create_directories(name);
   fname_ = name + "/" + GetNowTimeStramp();
   sfname_ = sname + "/" + GetNowTimeStramp();
-  f_ = std::fstream(fname_, std::ios::binary | std::ios::in);
+  f_ = std::fstream(fname_, std::ios::binary | std::ios::out);
 }
 BufWriter::~BufWriter() {
   f_.close();

@@ -33,6 +33,7 @@ bool DataCollector::SendData(const char *topic, const char *data,
     if (buf_cnt_[topic] % 100 == 0) {
       writer_[topic].reset(new BufWriter(topic));
       buf_cnt_[topic] = 0;
+      std::cout << "Reset BufWriter" << std::endl;
     }
     writer_[topic]->Write(data, len);
     buf_cnt_[topic] += 1;

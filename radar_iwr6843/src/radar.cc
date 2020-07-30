@@ -38,8 +38,10 @@ int main(int argc, char *argv[]) {
     control_port = kTTY3;
     data_port = kTTY4;
   }
+  data_collector::DataCollectParams params;
+  params.mode = data_collector::CollectMode::LOCAL_SAVE;
   std::shared_ptr<data_collector::DataCollector> collector(
-      new data_collector::DataCollector(argv[1], port));
+      new data_collector::DataCollector(argv[1], port, &params));
 
   radar::Reader_IWR6843 reader(control_port, B115200, data_port, B921600);
   reader.Setup(conf.conf().c_str());
@@ -71,7 +73,6 @@ int main(int argc, char *argv[]) {
       reader.ReadRawRadarResult(&res);
       auto str = res.SerializeAsString();
       collector->SendData(conf.write_topic().c_str(), str.c_str(), str.size());
-
       // auto res = raw_ress.add_result();
       // reader.ReadRawRadarResult(res);
       // if (raw_ress.result_size() >= pack_per_send) {
@@ -83,7 +84,7 @@ int main(int argc, char *argv[]) {
       //   raw_ress.Clear();
       // }
     }
-    std::cout << "Read" << std::endl;
+    // std::cout << "Read" << std::endl;
     std::this_thread::sleep_for(std::chrono::microseconds(10));
   }
 
