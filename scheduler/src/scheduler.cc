@@ -32,7 +32,7 @@ void Scheduler::Setup() {
   }
   sockaddr_un addr;
   addr.sun_family = AF_UNIX;
-  strncpy(addr.sun_path, kSchedulerSock, sizeof(kSchedulerSock));
+  strncpy(addr.sun_path, kSchedulerSock, sizeof(addr.sun_path));
   if (remove(kSchedulerSock) == -1 && errno != ENOENT) {
     perror("Fail to clear the sock file at setup");
     exit(1);
@@ -184,8 +184,6 @@ void Scheduler::HandleRegisterPacket(RegisterPacket *packet,
 
   RegisterAck ack;
   auto name = setting.name();
-
-  bool insert_succes = false;
 
   auto RejectFn = [&]() {
     ack.success = false;

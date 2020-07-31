@@ -151,7 +151,6 @@ void Mission::ControlLoop() {
 
     st_time.tv_sec = 10;
     st_time.tv_usec = 0;
-    int cnt = 0;
     FD_ZERO(&set);
     FD_SET(conn_.sock, &set);
     while (running_) {

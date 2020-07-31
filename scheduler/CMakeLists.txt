@@ -5,10 +5,10 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-add_compile_options(
-  "-Wall" "-Wpedantic" "-Wextra" "-fexceptions"
-  "$<$<CONFIG:DEBUG>:-O0;-g3;-ggdb>"
-)
+# add_compile_options(
+#   "-Wall" "-Wpedantic" "-Wextra" "-fexceptions"
+#   "$<$<CONFIG:DEBUG>:-O0;-g3;-ggdb>"
+# )
 find_package(Protobuf REQUIRED)
 # find_package(Boost 1.40 COMPONENTS algorithm REQUIRED)
 # if(Boost_FOUND)

@@ -3,10 +3,10 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <condition_variable>
 #include <functional>
 #include <iostream>
 #include <mutex>
-#include <condition_variable>
 #include <string>
 #include <unordered_map>
 namespace scheduler {
@@ -107,7 +107,7 @@ private:
 
 #define REGISTER_PACKET_HANDLE(handle_map, flag, PacketType, fn)               \
   handle_map.RegisterHandle(flag, [&](ClientConnection *conn) {                \
-    if (conn->buf_len < sizeof(PacketType)) {                                  \
+    if (conn->buf_len < static_cast<int>(sizeof(PacketType))) {                \
       return false;                                                            \
     }                                                                          \
     PacketType packet;                                                         \
