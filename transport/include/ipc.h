@@ -8,6 +8,25 @@
 #include "transport/include/transport.h"
 
 namespace transport {
+
+template <typename T, typename std::enable_if<std::is_pod<T>::value, void>::type
+                          * = nullptr>
+bool ParseRecvData(const ipc::buff_t &buf_data, T *data) {
+  *data = reinterpret_cast<const T *>(buf_data.data());
+  return true;
+}
+
+template <typename T,
+          typename std::enable_if<!std::is_pod<T>::value &&
+                                      std::is_member_function_pointer<decltype(
+                                          &T::SerializeAsString)>::value,
+                                  void>::type * = nullptr>
+bool ParseRecvData(const ipc::buff_t &buf_data, T *data) {
+  data->ParseFromString(std::string(
+      reinterpret_cast<const char *>(buf_data.data()), buf_data.size()));
+  return true;
+}
+
 template <typename T> class IPC : public Transport<T> {
 public:
   IPC(const std::string channel) : channel_(channel) {}
@@ -18,8 +37,7 @@ public:
       receiver_.reset(new ipc::channel(channel_.c_str(), ipc::receiver));
     });
     auto msg = receiver_->recv();
-    data->ParseFromString(
-        std::string(reinterpret_cast<const char *>(msg.data()), msg.size()));
+    ParseRecvData(msg, data);
     return true;
   }
 
