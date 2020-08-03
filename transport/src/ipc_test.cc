@@ -1,10 +1,12 @@
 #include <atomic>
 #include <iostream>
+#include <memory>
 #include <regex>
 #include <string>
 #include <thread>
 
-#include "cpp-ipc/include/ipc.h"
+#include "transport/include/ipc.h"
+#include "transport/proto_gen/simple.pb.h"
 
 namespace {
 
@@ -25,16 +27,17 @@ int main() {
   std::string buf, id = id__ + std::to_string(calc_unique_id());
   std::regex reg{"(c\\d+)> (.*)"};
 
-  ipc::channel cc{name__, ipc::sender};
+  std::shared_ptr<transport::Transport<transport::Message>> cc(
+      new transport::IPC<transport::Message>(name__));
 
   std::thread r{[&id, &reg] {
-    ipc::channel cc{name__, ipc::receiver};
+    std::shared_ptr<transport::Transport<transport::Message>> cc(
+        new transport::IPC<transport::Message>(name__));
     std::cout << id << " is ready." << std::endl;
     while (1) {
-      auto buf = cc.recv();
-      if (buf.empty())
-        continue;
-      std::string dat{buf.get<char const *>(), buf.size() - 1};
+      transport::Message msg;
+      cc->Receive(&msg);
+      std::string dat = msg.content();
       std::smatch mid;
       if (std::regex_match(dat, mid, reg)) {
         if (mid.str(1) == id) {
@@ -52,7 +55,9 @@ int main() {
   for (/*int i = 1*/;; /*++i*/) {
     std::cin >> buf;
     //        std::cout << "[" << i << "]" << std::endl;
-    cc.send(id + "> " + buf);
+    transport::Message msg;
+    msg.set_content(id + "> " + buf);
+    cc->Send(msg);
     if (buf == quit__)
       break;
   }
