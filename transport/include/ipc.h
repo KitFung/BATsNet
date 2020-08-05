@@ -27,16 +27,22 @@ bool ParseRecvData(const ipc::buff_t &buf_data, T *data) {
   return true;
 }
 
+bool ParseRecvData(const ipc::buff_t &buf_data, std::string *data) {
+  *data = std::string(reinterpret_cast<const char *>(buf_data.data()),
+                      buf_data.size());
+  return true;
+}
+
 template <typename T> class IPC : public Transport<T> {
 public:
   IPC(const std::string channel) : channel_(channel) {}
 
-  bool Receive(T *data) override {
+  bool Receive(T *data, uint32_t timeout = 10000) override {
 
     std::call_once(receiver_flag_, [&]() {
       receiver_.reset(new ipc::channel(channel_.c_str(), ipc::receiver));
     });
-    auto msg = receiver_->recv();
+    auto msg = receiver_->recv(timeout);
     ParseRecvData(msg, data);
     return true;
   }

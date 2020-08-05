@@ -37,3 +37,5 @@ target_link_libraries(transport INTERFACE ipc pthread rt)
 
 add_executable(ipc_test src/ipc_test.cc proto_gen/simple.pb.cc)
 target_link_libraries(ipc_test transport ${Protobuf_LIBRARIES})
+
+add_subdirectory(binding/python)

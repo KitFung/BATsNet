@@ -5,3 +5,4 @@
 - Protocol Buffers v3.12.3
 - openssl (libssl-dev)
 - lz4 (libzl4-dev)
+- pybind11 (install via conda)
