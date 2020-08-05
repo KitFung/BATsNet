@@ -1,0 +1,12 @@
+model: 64E
+rpm: 600.0
+# npackets: 
+timestamp_first_packet: false
+# pcap: 
+cut_angle: -0.01
+port:2368
+# device_ip:
+gps_time: false
+read_once: false
+read_fast: false
+repeat_delay: 0.0

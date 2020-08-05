@@ -27,7 +27,7 @@ bool ParseRecvData(const ipc::buff_t &buf_data, T *data) {
   return true;
 }
 
-bool ParseRecvData(const ipc::buff_t &buf_data, std::string *data) {
+inline bool ParseRecvData(const ipc::buff_t &buf_data, std::string *data) {
   *data = std::string(reinterpret_cast<const char *>(buf_data.data()),
                       buf_data.size());
   return true;

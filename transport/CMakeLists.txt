@@ -32,7 +32,7 @@ target_link_libraries(chat_test ipc pthread rt)
 
 add_library(transport INTERFACE)
 add_dependencies(transport cpp-ipc)
-target_include_directories(transport INTERFACE include/)
+target_include_directories(transport INTERFACE include/ ${SOURCE_DIR}/..)
 target_link_libraries(transport INTERFACE ipc pthread rt)
 
 add_executable(ipc_test src/ipc_test.cc proto_gen/simple.pb.cc)
