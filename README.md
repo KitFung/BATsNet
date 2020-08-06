@@ -6,3 +6,4 @@
 - openssl (libssl-dev)
 - lz4 (libzl4-dev)
 - pybind11 (install via conda)
+- python3

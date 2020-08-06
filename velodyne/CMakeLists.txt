@@ -13,6 +13,9 @@ find_package(Protobuf REQUIRED)
 
 # include_directories(${Protobuf_INCLUDE_DIRS})
 
+file(GLOB PB_FILE ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen/*)
+file(REMOVE ${PB_FILE})
+
 EXEC_PROGRAM(protoc 
   ARGS -I=${CMAKE_CURRENT_SOURCE_DIR}/proto
        --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
@@ -23,3 +26,4 @@ target_link_libraries(velodyne_proto PUBLIC ${Protobuf_LIBRARIES})
 target_include_directories(velodyne_proto PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(velodyne_driver)
+add_subdirectory(velodyne_pointcloud)

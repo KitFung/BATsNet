@@ -2,6 +2,7 @@ syntax = "proto2";
 
 package velodyne;
 
+// Unit of stamp is second
 message VelodynePacket {
   required double stamp = 1;
   required bytes data = 2;
@@ -27,4 +28,21 @@ message VelodyneDriverConf {
   optional bool read_once = 10 [ default = false ];
   optional bool read_fast = 11 [ default = false ];
   optional double repeat_delay = 12 [default = 0.0];
+}
+
+message PointXYZI {
+  required float x = 1;
+  required float y = 2;
+  required float z = 3;
+  optional float intensity = 4 [default = 0];
+};
+
+message PointCloud {
+  required double stamp = 1;
+  repeated PointXYZI point = 2;
+}
+
+message VelodynePointCloudConf {
+  required string model = 1;
+  required string calibration = 2;
 }

@@ -1,5 +1,5 @@
-// Copyright (C) 2007, 2009, 2010, 2012, 2019 Yaxin Liu, Patrick Beeson, Jack O'Quin, Joshua Whitley
-// All rights reserved.
+// Copyright (C) 2007, 2009, 2010, 2012, 2019 Yaxin Liu, Patrick Beeson, Jack
+// O'Quin, Joshua Whitley All rights reserved.
 //
 // Software License Agreement (BSD License 2.0)
 //
@@ -42,20 +42,18 @@
 #ifndef VELODYNE_POINTCLOUD_RAWDATA_H
 #define VELODYNE_POINTCLOUD_RAWDATA_H
 
+#include <boost/format.hpp>
 #include <errno.h>
+#include <math.h>
 #include <stdint.h>
 #include <string>
-#include <boost/format.hpp>
-#include <math.h>
 #include <vector>
 
-#include <ros/ros.h>
-#include <velodyne_msgs/VelodyneScan.h>
-#include <velodyne_pointcloud/calibration.h>
-#include <velodyne_pointcloud/datacontainerbase.h>
+#include "proto_gen/velodyne.pb.h"
+#include "velodyne_pointcloud/calibration.h"
+#include "velodyne_pointcloud/datacontainerbase.h"
 
-namespace velodyne_rawdata
-{
+namespace velodyne_rawdata {
 /**
  * Raw Velodyne packet constants and structures.
  */
@@ -64,8 +62,8 @@ static const int RAW_SCAN_SIZE = 3;
 static const int SCANS_PER_BLOCK = 32;
 static const int BLOCK_DATA_SIZE = (SCANS_PER_BLOCK * RAW_SCAN_SIZE);
 
-static const float ROTATION_RESOLUTION = 0.01f;     // [deg]
-static const uint16_t ROTATION_MAX_UNITS = 36000u;  // [deg/100]
+static const float ROTATION_RESOLUTION = 0.01f;    // [deg]
+static const uint16_t ROTATION_MAX_UNITS = 36000u; // [deg/100]
 
 /** @todo make this work for both big and little-endian machines */
 static const uint16_t UPPER_BANK = 0xeeff;
@@ -74,9 +72,9 @@ static const uint16_t LOWER_BANK = 0xddff;
 /** Special Defines for VLP16 support **/
 static const int VLP16_FIRINGS_PER_BLOCK = 2;
 static const int VLP16_SCANS_PER_FIRING = 16;
-static const float VLP16_BLOCK_TDURATION = 110.592f;  // [µs]
-static const float VLP16_DSR_TOFFSET = 2.304f;        // [µs]
-static const float VLP16_FIRING_TOFFSET = 55.296f;    // [µs]
+static const float VLP16_BLOCK_TDURATION = 110.592f; // [µs]
+static const float VLP16_DSR_TOFFSET = 2.304f;       // [µs]
+static const float VLP16_FIRING_TOFFSET = 55.296f;   // [µs]
 
 /** \brief Raw Velodyne data block.
  *
@@ -85,21 +83,18 @@ static const float VLP16_FIRING_TOFFSET = 55.296f;    // [µs]
  *
  *  use stdint.h types, so things work with both 64 and 32-bit machines
  */
-typedef struct raw_block
-{
-  uint16_t header;    ///< UPPER_BANK or LOWER_BANK
-  uint16_t rotation;  ///< 0-35999, divide by 100 to get degrees
+typedef struct raw_block {
+  uint16_t header;   ///< UPPER_BANK or LOWER_BANK
+  uint16_t rotation; ///< 0-35999, divide by 100 to get degrees
   uint8_t data[BLOCK_DATA_SIZE];
-}
-raw_block_t;
+} raw_block_t;
 
 /** used for unpacking the first two data bytes in a block
  *
  *  They are packed into the actual data stream misaligned.  I doubt
  *  this works on big endian machines.
  */
-union two_bytes
-{
+union two_bytes {
   uint16_t uint;
   uint8_t bytes[2];
 };
@@ -121,22 +116,17 @@ static const int SCANS_PER_PACKET = (SCANS_PER_BLOCK * BLOCKS_PER_PACKET);
  *
  *  status has either a temperature encoding or the microcode level
  */
-typedef struct raw_packet
-{
+typedef struct raw_packet {
   raw_block_t blocks[BLOCKS_PER_PACKET];
   uint16_t revolution;
   uint8_t status[PACKET_STATUS_SIZE];
-}
-raw_packet_t;
+} raw_packet_t;
 
 /** \brief Velodyne data conversion class */
-class RawData
-{
+class RawData {
 public:
   RawData();
-  ~RawData()
-  {
-  }
+  ~RawData() {}
 
   /** \brief Set up for data processing.
    *
@@ -144,17 +134,11 @@ public:
    *  begin:
    *
    *    - read device-specific angles calibration
-   *
-   *  @param private_nh private node handle for ROS parameters
-   *  @returns an optional calibration
    */
-  boost::optional<velodyne_pointcloud::Calibration> setup(ros::NodeHandle private_nh);
-
+  boost::optional<velodyne_pointcloud::Calibration>
+  setup(const velodyne::VelodynePointCloudConf &conf);
 
   /** \brief Set up for data processing offline.
-   * Performs the same initialization as in setup, in the abscence of a ros::NodeHandle.
-   * this method is useful if unpacking data directly from bag files, without passing
-   * through a communication overhead.
    *
    * @param calibration_file path to the calibration file
    * @param max_range_ cutoff for maximum range
@@ -162,30 +146,30 @@ public:
    * @returns 0 if successful;
    *           errno value for failure
    */
-  int setupOffline(std::string calibration_file, double max_range_, double min_range_);
+  int setupOffline(std::string calibration_file, double max_range_,
+                   double min_range_);
 
-  void unpack(const velodyne_msgs::VelodynePacket& pkt, DataContainerBase& data,
-              const ros::Time& scan_start_time);
+  void unpack(const velodyne::VelodynePacket &pkt, DataContainerBase &data,
+              const double &scan_start_time);
 
-  void setParameters(double min_range, double max_range, double view_direction, double view_width);
+  void setParameters(double min_range, double max_range, double view_direction,
+                     double view_width);
 
   int scansPerPacket() const;
 
 private:
   /** configuration parameters */
-  typedef struct
-  {
+  typedef struct {
     std::string model;
-    std::string calibrationFile;  ///< calibration file name
-    double max_range;             ///< maximum range to publish
-    double min_range;             ///< minimum range to publish
-    int min_angle;                ///< minimum angle to publish
-    int max_angle;                ///< maximum angle to publish
+    std::string calibrationFile; ///< calibration file name
+    double max_range;            ///< maximum range to publish
+    double min_range;            ///< minimum range to publish
+    int min_angle;               ///< minimum angle to publish
+    int max_angle;               ///< maximum angle to publish
 
     double tmp_min_angle;
     double tmp_max_angle;
-  }
-  Config;
+  } Config;
   Config config_;
 
   /**
@@ -196,21 +180,23 @@ private:
   float cos_rot_table_[ROTATION_MAX_UNITS];
 
   // timing offset lookup table
-  std::vector< std::vector<float> > timing_offsets;
+  std::vector<std::vector<float>> timing_offsets;
 
   /** \brief setup per-point timing offsets
-   * 
-   *  Runs during initialization and determines the firing time for each point in the scan
-   * 
-   *  NOTE: Does not support all sensors yet (vlp16, vlp32, and hdl32 are currently supported)
+   *
+   *  Runs during initialization and determines the firing time for each point
+   * in the scan
+   *
+   *  NOTE: Does not support all sensors yet (vlp16, vlp32, and hdl32 are
+   * currently supported)
    */
   bool buildTimings();
 
   /** add private function to handle the VLP16 **/
-  void unpack_vlp16(const velodyne_msgs::VelodynePacket& pkt, DataContainerBase& data,
-                    const ros::Time& scan_start_time);
+  void unpack_vlp16(const velodyne::VelodynePacket &pkt,
+                    DataContainerBase &data, const double &scan_start_time);
 };
 
-}  // namespace velodyne_rawdata
+} // namespace velodyne_rawdata
 
-#endif  // VELODYNE_POINTCLOUD_RAWDATA_H
+#endif // VELODYNE_POINTCLOUD_RAWDATA_H
