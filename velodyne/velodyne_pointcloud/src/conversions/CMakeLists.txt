@@ -1,2 +1,2 @@
-add_executable(velodyne_pointcloud transform_nodelet.cc transform.cc pointcloudXYZIRT.cc organized_cloudXYZIRT.cc)
-target_link_libraries(velodyne_pointcloud velodyne_rawdata ${YAML_CPP_LIBRARIES})
+add_executable(velodyne_pointcloud transform_node.cc transform.cc pointcloudXYZIRT.cc)
+target_link_libraries(velodyne_pointcloud velodyne_rawdata ${YAML_CPP_LIBRARIES} velodyne_proto transport)

@@ -28,21 +28,30 @@ message VelodyneDriverConf {
   optional bool read_once = 10 [ default = false ];
   optional bool read_fast = 11 [ default = false ];
   optional double repeat_delay = 12 [default = 0.0];
+
+  required string topic_name = 13;
 }
 
-message PointXYZI {
+message PointXYZIRT {
   required float x = 1;
   required float y = 2;
   required float z = 3;
   optional float intensity = 4 [default = 0];
+  optional float ring = 5 [default = 0];
+  optional float time = 6 [default = 0];
 };
 
 message PointCloud {
   required double stamp = 1;
-  repeated PointXYZI point = 2;
+  repeated PointXYZIRT point = 2;
 }
 
 message VelodynePointCloudConf {
   required string model = 1;
   required string calibration = 2;
+  required double max_range = 3;
+  required double min_range = 4;
+
+  required string scan_topic_name = 5;
+  required string cloud_topic_name = 6;
 }

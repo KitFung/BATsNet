@@ -1,31 +1,34 @@
-/*
- *  Copyright (C) 2012 Austin Robot Technology, Jack O'Quin
- *  License: Modified BSD Software License Agreement
- *
- *  $Id$
- */
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
-/** \file
+#include <chrono>
+#include <iostream>
+#include <memory>
+#include <thread>
 
-    This ROS node transforms raw Velodyne LIDAR packets to PointCloud2
-    in the /map frame of reference.
+#include <experimental/filesystem>
 
-*/
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/text_format.h>
 
-#include <ros/ros.h>
+#include "proto_gen/velodyne.pb.h"
 #include "velodyne_pointcloud/transform.h"
 
-/** Main node entry point. */
-int main(int argc, char **argv)
-{
-  ros::init(argc, argv, "transform_node");
+int main(int argc, char *argv[]) {
+  if (argc < 2) {
+    std::cerr << "[Usage] " << argv[0] << " conf_file" << std::endl;
+    exit(1);
+  }
+  velodyne::VelodynePointCloudConf conf;
+  int fd = open(argv[1], O_RDONLY);
+  google::protobuf::io::FileInputStream fstream(fd);
+  if (!google::protobuf::TextFormat::Parse(&fstream, &conf)) {
+    std::cerr << "Error while parsing conf" << std::endl;
+    exit(1);
+  }
 
-  // create conversion class, which subscribes to raw data
-  velodyne_pointcloud::Transform transform(ros::NodeHandle(),
-                                           ros::NodeHandle("~"));
-
-  // handle callbacks until shut down
-  ros::spin();
-
+  velodyne_pointcloud::Transform transform(conf);
+  transform.Start();
   return 0;
 }

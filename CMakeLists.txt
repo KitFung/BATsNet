@@ -5,6 +5,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(transport)
 
+set(GLOBAL_HEADER ${CMAKE_CURRENT_SOURCE_DIR})
+
 add_subdirectory(scheduler)
 add_subdirectory(data_collector)
 add_subdirectory(rslidar)

@@ -147,12 +147,12 @@ VelodyneDriver::VelodyneDriver(const velodyne::VelodyneDriverConf &conf) {
     // read data from live socket
     input_.reset(new velodyne_driver::InputSocket(conf, udp_port));
   }
-
+  config_.topic_name_ = conf.topic_name();
   // // raw packet output topic
   // output_ = node.advertise<velodyne_msgs::VelodyneScan>("velodyne_packets",
   // 10);
-  output_ =
-      std::make_shared<transport::IPC<velodyne::VelodyneScan>>(kScanTopic);
+  output_ = std::make_shared<transport::IPC<velodyne::VelodyneScan>>(
+      config_.topic_name_);
 
   last_azimuth_ = -1;
 }

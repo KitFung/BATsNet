@@ -45,23 +45,26 @@ namespace velodyne_rawdata {
 class DataContainerBase {
 public:
   DataContainerBase(const double max_range, const double min_range,
-                    const unsigned int scans_per_packet)
-      : config_(max_range, min_range, scans_per_packet) {}
+                    const unsigned int num_lasers,
+                    const unsigned int scans_per_block)
+      : config_(max_range, min_range, num_lasers, scans_per_block) {}
 
   struct Config {
     double max_range; ///< maximum range to publish
     double min_range; ///< minimum range to publish
-    unsigned int scans_per_packet;
+    unsigned int num_lasers;
+    unsigned int scans_per_block;
 
-    Config(double max_range, double min_range, unsigned int scans_per_packet)
-        : max_range(max_range), min_range(min_range),
-          scans_per_packet(scans_per_packet) {}
+    Config(double max_range, double min_range, const unsigned int num_lasers,
+           unsigned int scans_per_block)
+        : max_range(max_range), min_range(min_range), num_lasers(num_lasers),
+          scans_per_block(scans_per_block) {}
   };
 
   virtual void setup(const velodyne::VelodyneScan &scan_msg) {
     cloud.set_stamp(scan_msg.stamp());
-    cloud.mutable_point()->Reserve(scan_msg.packets_size() *
-                                   config_.scans_per_packet);
+    cloud.mutable_point()->Reserve(
+        scan_msg.packets_size() * config_.scans_per_block * config_.num_lasers);
   }
 
   virtual void addPoint(float x, float y, float z, const uint16_t ring,

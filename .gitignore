@@ -2,6 +2,7 @@ data
 *_env
 *.pb.h
 *.pb.cc
+*_pb2.py
 
 .vscode
 # Prerequisites

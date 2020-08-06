@@ -44,8 +44,6 @@
 
 namespace velodyne_driver {
 
-constexpr char kScanTopic[] = "/velodyne/scan";
-
 class VelodyneDriver {
 public:
   VelodyneDriver(const velodyne::VelodyneDriverConf &conf);
@@ -64,6 +62,7 @@ private:
     double time_offset;   // time in seconds added to each velodyne time stamp
     bool enabled;         // polling is enabled
     bool timestamp_first_packet;
+    std::string topic_name_;
   } config_;
 
   std::shared_ptr<Input> input_;

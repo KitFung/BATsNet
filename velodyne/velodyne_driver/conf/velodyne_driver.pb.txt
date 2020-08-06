@@ -10,3 +10,4 @@ gps_time: false
 read_once: false
 read_fast: false
 repeat_delay: 0.0
+topic_name: "/velodyne/scan"

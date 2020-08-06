@@ -14,11 +14,14 @@ find_package(Protobuf REQUIRED)
 # include_directories(${Protobuf_INCLUDE_DIRS})
 
 file(GLOB PB_FILE ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen/*)
-file(REMOVE ${PB_FILE})
+if (NOT "${PB_FILE}" STREQUAL "")
+  file(REMOVE ${PB_FILE})
+endif()
 
 EXEC_PROGRAM(protoc 
   ARGS -I=${CMAKE_CURRENT_SOURCE_DIR}/proto
        --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
+       --python_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
        ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto)
 
 add_library(velodyne_proto STATIC proto_gen/velodyne.pb.cc)

@@ -10,7 +10,6 @@ elseif ("${CMAKE_CXX_STANDARD_COMPUTED_DEFAULT}" STREQUAL "98")
   set(CMAKE_CXX_STANDARD 11)
 endif()
 
-find_package(Boost COMPONENTS signals)
 find_package(Eigen3 REQUIRED)
 # Resolve system dependency on yaml-cpp, which apparently does not
 # provide a CMake find_package() module.
@@ -35,4 +34,4 @@ include_directories(include ${catkin_INCLUDE_DIRS}
 )
 
 add_subdirectory(src/lib)
-# add_subdirectory(src/conversions)
+add_subdirectory(src/conversions)
