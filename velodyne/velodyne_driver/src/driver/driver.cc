@@ -225,7 +225,7 @@ bool VelodyneDriver::poll(void) {
   }
 
   // publish message using time of last packet read
-  std::cout << "Publishing a full Velodyne scan." << std::endl;
+  // std::cout << "Publishing a full Velodyne scan." << std::endl;
   if (config_.timestamp_first_packet) {
     scan.set_stamp(scan.packets(0).stamp());
   } else {

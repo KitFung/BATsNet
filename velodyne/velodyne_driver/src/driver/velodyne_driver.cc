@@ -28,6 +28,7 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
+  ipc::shm::remove("-velodyne-scan");
   velodyne_driver::VelodyneDriver driver(conf);
 
   while (true) {

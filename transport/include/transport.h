@@ -10,7 +10,7 @@ template <typename T> class Transport;
 template <typename T, typename std::enable_if<std::is_pod<T>::value, void>::type
                           * = nullptr>
 bool SendDataFn(Transport<T> *obj, const T &data) {
-  return obj->SendData(reinterpret_cast<const char *>(data), sizeof(T));
+  return obj->SendData(reinterpret_cast<const char *>(&data), sizeof(T));
 }
 
 template <typename T,

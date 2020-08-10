@@ -1,0 +1,6 @@
+model: "VLP16"
+calibration: "/home/kit/dev/BATsNet/velodyne/velodyne_pointcloud/params/VLP16db.yaml"
+max_range: 130.0
+min_range: 0.4
+scan_topic_name: "/velodyne/scan2"
+cloud_topic_name: "/velodyne/cloud"

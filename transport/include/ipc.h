@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <memory>
 #include <mutex>
 
@@ -7,12 +8,20 @@
 
 #include "transport/include/transport.h"
 
+// The broadcast function in cpp-ipc library have bug, cannot work properly
+// after the queue is full. So only use it unicast now
+using ipctype = ipc::chan<
+    ipc::wr<ipc::relat::single, ipc::relat::single, ipc::trans::unicast>>;
+
+// using ipctype = ipc::chan<
+//     ipc::wr<ipc::relat::single, ipc::relat::multi, ipc::trans::broadcast>>;
+
 namespace transport {
 
 template <typename T, typename std::enable_if<std::is_pod<T>::value, void>::type
                           * = nullptr>
 bool ParseRecvData(const ipc::buff_t &buf_data, T *data) {
-  *data = reinterpret_cast<const T *>(buf_data.data());
+  memcpy(data, buf_data.data(), sizeof(T));
   return true;
 }
 
@@ -35,14 +44,23 @@ inline bool ParseRecvData(const ipc::buff_t &buf_data, std::string *data) {
 
 template <typename T> class IPC : public Transport<T> {
 public:
-  IPC(const std::string channel) : channel_(channel) {}
+  IPC(const std::string channel) {
+    channel_ = channel;
+    for (auto &w : channel_) {
+      if (w == '/') {
+        w = '-';
+      }
+    }
+  }
 
   bool Receive(T *data, uint32_t timeout = 10000) override {
-
-    std::call_once(receiver_flag_, [&]() {
-      receiver_.reset(new ipc::channel(channel_.c_str(), ipc::receiver));
+    std::call_once(sender_flag_, [&]() {
+      receiver_.reset(new ipctype(channel_.c_str(), ipc::sender));
     });
     auto msg = receiver_->recv(timeout);
+    if (msg.empty()) {
+      return false;
+    }
     ParseRecvData(msg, data);
     return true;
   }
@@ -50,7 +68,7 @@ public:
 protected:
   bool SendData(const char *data, const int32_t len) override {
     std::call_once(sender_flag_, [&]() {
-      sender_.reset(new ipc::channel(channel_.c_str(), ipc::sender));
+      sender_.reset(new ipctype(channel_.c_str(), ipc::sender));
     });
     sender_->send(data, len);
     return true;
@@ -59,8 +77,8 @@ protected:
 private:
   std::string channel_;
   std::once_flag sender_flag_, receiver_flag_;
-  std::shared_ptr<ipc::channel> sender_;
-  std::shared_ptr<ipc::channel> receiver_;
+  std::shared_ptr<ipctype> sender_;
+  std::shared_ptr<ipctype> receiver_;
 };
 
 } // namespace transport

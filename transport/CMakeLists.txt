@@ -12,7 +12,7 @@ EXEC_PROGRAM(protoc
        ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto)
 
 ExternalProject_Add(cpp-ipc
-    GIT_REPOSITORY https://github.com/mutouyun/cpp-ipc
+    GIT_REPOSITORY https://github.com/KitFung/cpp-ipc
     PREFIX ${EXTERNAL_INSTALL_LOCATION}
     SOURCE_SUBDIR build
     INSTALL_COMMAND cmake -E echo "Skipping install step."

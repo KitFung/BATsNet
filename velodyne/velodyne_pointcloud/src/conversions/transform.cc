@@ -76,7 +76,8 @@ void Transform::processScan(const velodyne::VelodyneScan &scanMsg) {
 void Transform::Start() {
   velodyne::VelodyneScan scan;
   while (true) {
-    if (velodyne_scan_->Receive(&scan)) {
+    if (velodyne_scan_->Receive(&scan, 1000)) {
+      // printf("Process a scan %lf\n", scan.stamp());
       processScan(scan);
       scan.Clear();
     }
