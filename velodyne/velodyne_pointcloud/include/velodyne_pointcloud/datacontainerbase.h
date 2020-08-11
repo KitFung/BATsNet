@@ -63,6 +63,7 @@ public:
 
   virtual void setup(const velodyne::VelodyneScan &scan_msg) {
     cloud.set_stamp(scan_msg.stamp());
+    cloud.clear_point();
     cloud.mutable_point()->Reserve(
         scan_msg.packets_size() * config_.scans_per_block * config_.num_lasers);
   }

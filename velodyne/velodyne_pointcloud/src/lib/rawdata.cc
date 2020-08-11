@@ -447,7 +447,6 @@ void RawData::unpack_vlp16(const velodyne::VelodynePacket &pkt,
   int azimuth_corrected;
   float x, y, z;
   float intensity;
-
   float time_diff_start_to_this_packet = pkt.stamp() - scan_start_time;
 
   const char *pkt_data = pkt.data().data();
@@ -514,7 +513,6 @@ void RawData::unpack_vlp16(const velodyne::VelodynePacket &pkt,
              ((dsr * VLP16_DSR_TOFFSET) + (firing * VLP16_FIRING_TOFFSET)) /
              VLP16_BLOCK_TDURATION);
         azimuth_corrected = ((int)round(azimuth_corrected_f)) % 36000;
-
         /*condition added to avoid calculating points which are not
           in the interesting defined area (min_angle < area < max_angle)*/
         if ((azimuth_corrected >= config_.min_angle &&

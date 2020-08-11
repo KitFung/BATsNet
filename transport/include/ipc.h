@@ -70,8 +70,7 @@ protected:
     std::call_once(sender_flag_, [&]() {
       sender_.reset(new ipctype(channel_.c_str(), ipc::sender));
     });
-    sender_->send(data, len);
-    return true;
+    return sender_->send(data, len);
   }
 
 private:

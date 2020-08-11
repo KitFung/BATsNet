@@ -44,12 +44,13 @@ Transform::Transform(const velodyne::VelodynePointCloudConf &conf)
 
   // advertise output point cloud (before subscribing to input data)
   // output_ = node.advertise<sensor_msgs::PointCloud2>("velodyne_points", 10);
+  data_->setParameters(config_.min_range, config_.max_range, 0, M_PI * 2);
+  // data_->setParameters(config_.min_range, config_.max_range, 0, M_PI * 2);
+
   output_ = std::make_shared<transport::IPC<velodyne::PointCloud>>(
       conf.cloud_topic_name());
   velodyne_scan_ = std::make_shared<transport::IPC<velodyne::VelodyneScan>>(
       conf.scan_topic_name());
-  // velodyne_scan_ =
-  //     node.subscribe("velodyne_packets", 10, &Transform::processScan, this);
 }
 /** @brief Callback for raw scan messages.
  *
@@ -71,13 +72,16 @@ void Transform::processScan(const velodyne::VelodyneScan &scanMsg) {
   }
   // publish the accumulated cloud message
   output_->Send(container_ptr->finishCloud());
+  // std::cout << "point size: " << container_ptr->finishCloud().point_size()
+  //           << std::endl;
 }
 
 void Transform::Start() {
   velodyne::VelodyneScan scan;
   while (true) {
+    // std::cout << "wait scan" << std::endl;
     if (velodyne_scan_->Receive(&scan, 1000)) {
-      // printf("Process a scan %lf\n", scan.stamp());
+      // std::cout << "processScan" << std::endl;
       processScan(scan);
       scan.Clear();
     }
