@@ -15,7 +15,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 # protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS EXPORT_MACRO DLL_EXPORT foo.proto)
 
 add_library(data_io STATIC src/data_io.cc)
-target_link_libraries(data_io stdc++fs)
+target_link_libraries(data_io stdc++fs lz4)
 
 add_library(data_collector SHARED src/data_collector.cc)
 set_target_properties(data_collector PROPERTIES VERSION ${PROJECT_VERSION})

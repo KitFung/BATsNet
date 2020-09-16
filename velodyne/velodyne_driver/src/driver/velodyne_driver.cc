@@ -16,12 +16,12 @@
 #include "velodyne_driver/driver.h"
 
 int main(int argc, char *argv[]) {
-  if (argc < 2) {
-    std::cerr << "[Usage] " << argv[0] << " conf_file" << std::endl;
+  if (argc < 4) {
+    std::cerr << "[Usage] " << argv[0] << " broker_ip broker_port conf_file" << std::endl;
     exit(1);
   }
   velodyne::VelodyneDriverConf conf;
-  int fd = open(argv[1], O_RDONLY);
+  int fd = open(argv[3], O_RDONLY);
   google::protobuf::io::FileInputStream fstream(fd);
   if (!google::protobuf::TextFormat::Parse(&fstream, &conf)) {
     std::cerr << "Error while parsing conf" << std::endl;
@@ -29,10 +29,12 @@ int main(int argc, char *argv[]) {
   }
 
   ipc::shm::remove("-velodyne-scan");
-  velodyne_driver::VelodyneDriver driver(conf);
+  std::shared_ptr<velodyne_driver::VelodyneDriver> driver;
+  driver = std::make_shared<velodyne_driver::VelodyneDriver>(conf, argv[1], atoi(argv[2]));
 
   while (true) {
-    bool polled_ = driver.poll();
+    bool polled_ = driver->poll();
+    // std::cout << "poll" << std::endl;
     if (!polled_)
       std::cerr << "Velodyne - Failed to poll device." << std::endl;
   }

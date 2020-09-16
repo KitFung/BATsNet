@@ -42,34 +42,41 @@
 #include "transport/include/ipc.h"
 #include "velodyne_driver/input.h"
 
-namespace velodyne_driver {
+#include "data_collector/include/data_collector.h"
 
-class VelodyneDriver {
-public:
-  VelodyneDriver(const velodyne::VelodyneDriverConf &conf);
-  ~VelodyneDriver() {}
+namespace velodyne_driver
+{
 
-  bool poll(void);
+  class VelodyneDriver
+  {
+  public:
+    VelodyneDriver(const velodyne::VelodyneDriverConf &conf, const char *broker_ip = nullptr, const int broker_port = 0);
+    ~VelodyneDriver() {}
 
-private:
-  // configuration parameters
-  struct {
-    std::string frame_id; // tf frame ID
-    std::string model;    // device model name
-    int npackets;         // number of packets to collect
-    double rpm;           // device rotation rate (RPMs)
-    int cut_angle;        // cutting angle in 1/100°
-    double time_offset;   // time in seconds added to each velodyne time stamp
-    bool enabled;         // polling is enabled
-    bool timestamp_first_packet;
-    std::string topic_name_;
-  } config_;
+    bool poll(void);
 
-  std::shared_ptr<Input> input_;
-  // ros::Publisher output_;
-  std::shared_ptr<transport::IPC<velodyne::VelodyneScan>> output_;
-  int last_azimuth_;
-};
+  private:
+    // configuration parameters
+    struct
+    {
+      std::string frame_id; // tf frame ID
+      std::string model;    // device model name
+      int npackets;         // number of packets to collect
+      double rpm;           // device rotation rate (RPMs)
+      int cut_angle;        // cutting angle in 1/100°
+      double time_offset;   // time in seconds added to each velodyne time stamp
+      bool enabled;         // polling is enabled
+      bool timestamp_first_packet;
+      std::string topic_name_;
+    } config_;
+
+    std::shared_ptr<Input> input_;
+    // ros::Publisher output_;
+    std::shared_ptr<transport::IPC<velodyne::VelodyneScan>> output_;
+    int last_azimuth_;
+
+    std::shared_ptr<data_collector::DataCollector> collector_;
+  };
 
 } // namespace velodyne_driver
 

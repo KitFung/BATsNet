@@ -6,4 +6,5 @@ target_link_libraries(velodyne_driver
   velodyne_input
   velodyne_proto
   transport
+  data_collector
 )

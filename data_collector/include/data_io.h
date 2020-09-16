@@ -1,7 +1,10 @@
 #pragma once
 
+#include <zlib.h>
+
 #include <fstream>
 #include <string>
+#include <vector>
 
 namespace data_collector {
 
@@ -24,9 +27,10 @@ public:
   void Write(const char *buf, const int len);
 
 private:
-  std::fstream f_;
   std::string fname_;
   std::string sfname_;
+  std::vector<char> buf_;
+  gzFile f_;
 };
 
 class BufReader {
@@ -37,6 +41,7 @@ public:
 
 private:
   std::string fname_;
-  std::fstream f_;
+  gzFile f_;
+  std::vector<char> buf_;
 };
 } // namespace data_collector

@@ -6,6 +6,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <lz4.h>
+
 #include <chrono>
 #include <experimental/filesystem>
 #include <iostream>
@@ -60,33 +62,40 @@ BufWriter::BufWriter(const std::string &topic) {
   fs::create_directories(name);
   fname_ = name + "/" + GetNowTimeStramp();
   sfname_ = sname + "/" + GetNowTimeStramp();
-  f_ = std::fstream(fname_, std::ios::binary | std::ios::out);
+  f_ = gzopen(fname_.c_str(), "wb");
 }
+
 BufWriter::~BufWriter() {
-  f_.close();
+  gzclose(f_);
   fs::rename(fname_, sfname_);
 }
 
 void BufWriter::Write(const char *buf, const int len) {
+  if (buf_.size() < len) {
+    buf_.resize(len);
+  }
   int32_t wlen = len;
-  f_.write(reinterpret_cast<char *>(&wlen), sizeof(int32_t));
-  f_.write(buf, len);
+  gzwrite(f_, reinterpret_cast<char *>(&wlen), sizeof(int32_t));
+  gzwrite(f_, buf, len);
 }
 
 BufReader::BufReader(const std::string &file) : fname_(file) {
-  f_ = std::fstream(file, std::ios::binary | std::ios::in);
+  f_ = gzopen(file.c_str(), "r");
 }
 
 bool BufReader::Read(char *buf, int *len, const int buf_size) {
   int32_t msg_len = 0;
-  f_.read(reinterpret_cast<char *>(&msg_len), sizeof(int32_t));
+  gzread(f_, reinterpret_cast<char *>(&msg_len), sizeof(int32_t));
   *len = msg_len;
   if (msg_len > 0) {
-    f_.read(buf, msg_len);
+    gzread(f_, buf, msg_len);
   }
-  return !f_.eof();
+  return !gzeof(f_);
 }
 
-void BufReader::RemoveBuf() { fs::remove(fname_); }
+void BufReader::RemoveBuf() { 
+  gzclose(f_);
+  fs::remove(fname_);
+}
 
 } // namespace data_collector

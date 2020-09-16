@@ -42,7 +42,13 @@
 
 namespace velodyne_driver {
 
-VelodyneDriver::VelodyneDriver(const velodyne::VelodyneDriverConf &conf) {
+VelodyneDriver::VelodyneDriver(const velodyne::VelodyneDriverConf &conf, const char *broker_ip, const int broker_port) {
+  if (broker_ip != nullptr) {
+    data_collector::DataCollectParams params;
+    params.mode = data_collector::CollectMode::LOCAL_SAVE;
+    collector_ = std::shared_ptr<data_collector::DataCollector>(
+      new data_collector::DataCollector(broker_ip, broker_port, &params));
+  }
   config_.model = conf.model();
 
   double packet_rate; // packet frequency (Hz)
@@ -231,8 +237,11 @@ bool VelodyneDriver::poll(void) {
   } else {
     scan.set_stamp(scan.packets(scan.packets_size() - 1).stamp());
   }
-  // output_.publish(scan);
-  output_->Send(scan);
+  // output_->Send(scan);
+  auto scan_str = scan.SerializeAsString();
+  if (collector_) {
+    collector_->SendData(config_.topic_name_.c_str(), scan_str.c_str(), scan_str.size());
+  }
   return true;
 }
 

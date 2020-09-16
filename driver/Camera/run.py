@@ -7,7 +7,7 @@ libc = ctypes.CDLL("libc.so.6")
 
 
 def main():
-    source = "rtsp://admin:75#=i72i@10.32.10.2:554/Streaming/Channels/1"
+    source = "rtsp://10.0.0.4/?video=1"
     FPS = 30
     while True:
         libc.usleep(1)
