@@ -1,0 +1,3 @@
+[submodule "third_party/etcd-cpp-apiv3"]
+	path = third_party/etcd-cpp-apiv3
+	url = https://github.com/KitFung/etcd-cpp-apiv3.git
