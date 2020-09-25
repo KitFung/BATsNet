@@ -1,3 +1,5 @@
+#pragma once
+
 namespace service_discovery {
 
 // const char kBATs_ip[] = "10.0.0.100";

@@ -30,9 +30,12 @@ bool SendDataFn(Transport<T> *obj, const T &data) {
   return obj->SendData(reinterpret_cast<const char *>(data.data()),
                        data.size());
 }
+
 template <typename T> class Transport {
 public:
   Transport() {}
+  virtual ~Transport() {}
+
   bool Send(const T &data) { return SendDataFn(this, data); }
 
   // Let the receive to customize in each sub class.

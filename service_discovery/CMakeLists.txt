@@ -15,5 +15,9 @@ add_library(service_node SHARED src/service_node.cc)
 target_include_directories(service_node PUBLIC ./)
 target_link_libraries(service_node etcd-cpp-api)
 
+add_library(service_discovery SHARED src/service_discovery.cc)
+target_include_directories(service_discovery PUBLIC ./ ${GLOBAL_HEADER}/third_party/etcd-cpp-apiv3)
+target_link_libraries(service_discovery etcd-cpp-api)
+
 add_executable(test_node src/test_node.cc)
 target_link_libraries(test_node service_node)

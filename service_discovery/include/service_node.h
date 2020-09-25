@@ -5,7 +5,7 @@
 #include <string>
 #include <thread>
 
-#include "third_party/etcd-cpp-apiv3/etcd/Client.hpp"
+#include "etcd/Client.hpp"
 
 #include "include/common.h"
 
@@ -36,6 +36,8 @@ private:
   std::thread inner_loop_;
   std::shared_ptr<etcd::Client> etcd_;
   int cport_ = 0;
-  int loop_interval_s_ = 5;
+  int loop_interval_s_ = 2;
+
+  int running_ = true;
 };
 } // namespace service_discovery

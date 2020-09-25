@@ -34,9 +34,13 @@ target_link_libraries(chat_test ipc pthread rt)
 add_library(transport INTERFACE)
 add_dependencies(transport cpp-ipc)
 target_include_directories(transport INTERFACE include/ ${SOURCE_DIR}/..)
-target_link_libraries(transport INTERFACE ipc pthread rt)
+  target_link_libraries(transport INTERFACE ipc pthread rt mosquitto mosquittopp)
+target_compile_options (transport INTERFACE -Wno-deprecated-declarations)
 
 add_executable(ipc_test src/ipc_test.cc proto_gen/simple.pb.cc)
 target_link_libraries(ipc_test transport ${Protobuf_LIBRARIES})
+
+add_executable(block_message_test src/block_message_test.cc proto_gen/simple.pb.cc)
+target_link_libraries(block_message_test transport ${Protobuf_LIBRARIES} service_discovery service_node)
 
 add_subdirectory(binding/python)

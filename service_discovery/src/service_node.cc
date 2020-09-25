@@ -23,9 +23,11 @@ ServiceNode::ServiceNode(const std::string &identifier, const int port)
 }
 
 ServiceNode::~ServiceNode() {
+  running_ = false;
   if (inner_loop_.joinable()) {
     inner_loop_.join();
   }
+  etcd_->rm(identifier_);
 }
 
 std::string ServiceNode::RetreiveBatsIP() const {
@@ -45,17 +47,25 @@ std::string ServiceNode::RetreiveBatsIP() const {
   servaddr.sin_family = AF_INET;
   servaddr.sin_port = htons(kBATs_qport);
   servaddr.sin_addr.s_addr = inet_addr(kBATs_ip);
+  struct timeval tv;
+  tv.tv_sec = 1;
+  tv.tv_usec = 0;
+  setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 
-  int n;
+  int n = 0;
   socklen_t len;
 
   sendto(sockfd, (const char *)msg, strlen(msg), MSG_CONFIRM,
          (const struct sockaddr *)&servaddr, sizeof(servaddr));
   n = recvfrom(sockfd, (char *)buffer, sizeof(buffer), MSG_WAITALL,
                (struct sockaddr *)&servaddr, &len);
+  if (n == -1) {
+    perror("Cannot connect to bats ip query");
+    exit(EXIT_FAILURE);
+  }
+
   buffer[n] = '\0';
   close(sockfd);
-
   return std::string(buffer);
 }
 
@@ -68,7 +78,6 @@ int ServiceNode::RetreiveEnvPort() const {
 }
 
 void ServiceNode::Register() {
-//   etcd_->rmdir(identifier_, true).wait();
   auto respond = etcd_->add(identifier_, val_, loop_interval_s_ * 3).get();
   std::cout << etcd_->get(identifier_).get().value().as_string() << std::endl;
 
@@ -89,7 +98,7 @@ void ServiceNode::RenewRegister() {
 
 void ServiceNode::InnerLoop() {
   Register();
-  while (true) {
+  while (running_) {
     std::this_thread::sleep_for(std::chrono::seconds(loop_interval_s_));
     RenewRegister();
   }
