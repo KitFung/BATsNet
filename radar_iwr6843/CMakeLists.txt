@@ -12,6 +12,8 @@ find_package(Protobuf REQUIRED)
 # endif()
 
 include_directories(${Protobuf_INCLUDE_DIRS})
+include_directories(${GLOBAL_HEADER})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen)
 EXEC_PROGRAM(protoc 
@@ -19,11 +21,20 @@ EXEC_PROGRAM(protoc
        --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
        ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto)
 
-file(GLOB SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen/*.cc)
+file(GLOB PROTO_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen/*.cc)
 file(GLOB CONF_FILES ${CMAKE_CURRENT_SOURCE_DIR}/conf/*)
-add_executable(radar_iwr6843 ${SRC_FILES})
-target_link_libraries(radar_iwr6843 ${Protobuf_LIBRARIES} stdc++fs data_collector)
-target_include_directories(radar_iwr6843 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} data_collector)
+
+add_library(radar_lib STATIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/iwr6843_read.cc
+  ${PROTO_SRC_FILES})
+target_link_libraries(radar_lib ${Protobuf_LIBRARIES}
+  stdc++fs data_collector service_node transport)
+
+add_executable(radar_iwr6843 ${CMAKE_CURRENT_SOURCE_DIR}/src/radar.cc)
+target_link_libraries(radar_iwr6843 radar_lib)
+
+add_executable(debug ${CMAKE_CURRENT_SOURCE_DIR}/src/radar_cross_node_debug.cc)
+target_link_libraries(debug radar_lib)
 
 install(DIRECTORY DESTINATION /opt/aiot/drivers/bin)
 install(DIRECTORY conf/ DESTINATION /opt/aiot/drivers/conf/radar)

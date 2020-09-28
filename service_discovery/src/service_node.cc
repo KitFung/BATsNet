@@ -14,12 +14,15 @@ namespace service_discovery {
 ServiceNode::ServiceNode(const std::string &identifier, const int port)
     : identifier_(identifier), cport_(port) {
   etcd_ = std::make_shared<etcd::Client>(ketcd_src);
+  std::cout << "Connected to etcd: " << ketcd_src << std::endl;
   if (cport_ == 0) {
-    val_ = RetreiveBatsIP() + ":" + std::to_string(RetreiveEnvPort());
+    val_ = RetreiveBrokerIP() + ":" + std::to_string(RetreiveEnvPort());
   } else {
-    val_ = RetreiveBatsIP() + ":" + std::to_string(cport_);
+    val_ = RetreiveBrokerIP() + ":" + std::to_string(cport_);
   }
   inner_loop_ = std::thread([&] { InnerLoop(); });
+  // Just a interval to it register
+  std::this_thread::sleep_for(std::chrono::seconds(1));
 }
 
 ServiceNode::~ServiceNode() {
@@ -27,10 +30,12 @@ ServiceNode::~ServiceNode() {
   if (inner_loop_.joinable()) {
     inner_loop_.join();
   }
-  etcd_->rm(identifier_);
+  if (registered_) {
+    etcd_->rm(identifier_);
+  }
 }
 
-std::string ServiceNode::RetreiveBatsIP() const {
+std::string ServiceNode::RetreiveBrokerIP() const {
   // Simlpe UDP
   int sockfd;
   char buffer[1024];
@@ -70,16 +75,17 @@ std::string ServiceNode::RetreiveBatsIP() const {
 }
 
 int ServiceNode::RetreiveEnvPort() const {
-  if (const char *port = std::getenv("CUR_FOG_PORT")) {
+  if (const char *port = std::getenv("SERVICE_BROKER_PORT")) {
     int p = std::atoi(port);
     return p;
   }
-  return 12345;
+  return 1883;
 }
 
 void ServiceNode::Register() {
   auto respond = etcd_->add(identifier_, val_, loop_interval_s_ * 3).get();
-  std::cout << etcd_->get(identifier_).get().value().as_string() << std::endl;
+  std::cout << "Registered as: " << identifier_ << " -> "
+            << etcd_->get(identifier_).get().value().as_string() << std::endl;
 
   int err_code = respond.error_code();
   if (err_code != 0) {
@@ -90,6 +96,7 @@ void ServiceNode::Register() {
       exit(EXIT_FAILURE);
     }
   }
+  registered_ = 1;
 }
 
 void ServiceNode::RenewRegister() {

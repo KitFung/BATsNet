@@ -9,7 +9,7 @@
 #include <mosquitto.h>
 #include <mosquittopp.h>
 
-#include "include/data_io.h"
+#include "data_collector/include/data_io.h"
 
 namespace data_collector {
 enum class CollectMode { REAL_TIME_UPLOAD = 1, LOCAL_SAVE = 2 };

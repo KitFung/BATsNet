@@ -27,7 +27,7 @@ template <typename T,
                                   void>::type * = nullptr>
 bool ParseRecvData(const mosquitto_message *message, T *data) {
   data->ParseFromArray(reinterpret_cast<const char *>(message->payload),
-                        message->payloadlen);
+                       message->payloadlen);
   return true;
 }
 
@@ -87,7 +87,8 @@ private:
   bool InitMos() {
     // Step 1. Get Destination
     if (!helper_.GetAddress(channel_, &addr_, &port_)) {
-      std::cerr << "Failed to found existing channel" << std::endl;
+      std::cerr << "Failed to found existing channel in " << addr_ << " "
+                << port_ << std::endl;
       return false;
     }
     connect(addr_.c_str(), port_);

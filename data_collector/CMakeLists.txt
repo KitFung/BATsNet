@@ -19,13 +19,11 @@ target_link_libraries(data_io stdc++fs lz4)
 
 add_library(data_collector SHARED src/data_collector.cc)
 set_target_properties(data_collector PROPERTIES VERSION ${PROJECT_VERSION})
-target_link_libraries(data_collector mosquitto mosquittopp data_io)
+target_link_libraries(data_collector mosquitto mosquittopp data_io z)
 target_compile_options (data_collector PRIVATE -Wno-deprecated-declarations)
 target_include_directories(data_collector
   PUBLIC
-    ./
-  PRIVATE
-    src
+    ${CMAKE_CURRENT_SOURCE_DIR}
   )
 
 add_library(data_upload_mission_lib STATIC src/data_upload_mission.cc)

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -20,7 +21,7 @@ public:
 
 private:
   // The IP is the BATs IP, so must get from BATS
-  std::string RetreiveBatsIP() const;
+  std::string RetreiveBrokerIP() const;
   // The MQTT port is seted in GLOBAL ENV, so get from env
   int RetreiveEnvPort() const;
 
@@ -37,7 +38,7 @@ private:
   std::shared_ptr<etcd::Client> etcd_;
   int cport_ = 0;
   int loop_interval_s_ = 2;
-
+  std::atomic<int> registered_ = {0};
   int running_ = true;
 };
 } // namespace service_discovery

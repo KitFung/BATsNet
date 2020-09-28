@@ -12,7 +12,7 @@ include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${GLOBAL_HEADER}/third_party/etcd-cpp-apiv3)
 
 add_library(service_node SHARED src/service_node.cc)
-target_include_directories(service_node PUBLIC ./)
+target_include_directories(service_node PUBLIC ./ ${GLOBAL_HEADER}/third_party/etcd-cpp-apiv3)
 target_link_libraries(service_node etcd-cpp-api)
 
 add_library(service_discovery SHARED src/service_discovery.cc)
