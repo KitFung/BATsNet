@@ -87,11 +87,11 @@ private:
   bool InitMos() {
     // Step 1. Get Destination
     if (!helper_.GetAddress(channel_, &addr_, &port_)) {
-      std::cerr << "Failed to found existing channel in " << addr_ << " "
-                << port_ << std::endl;
+      std::cerr << "Failed to found existing channel" << std::endl;
       return false;
     }
     connect(addr_.c_str(), port_);
+    std::cout << "MOS Connected to " << addr_ << " " << port_ << std::endl;
     loop_start();
     connected_ = true;
 
