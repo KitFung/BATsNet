@@ -1,0 +1,27 @@
+syntax = "proto2";
+
+package common;
+
+message BasicConf {
+  required string controller_identifier = 1;
+  required string identifier = 2;
+  required string device_config_path = 4;
+
+  // Assuming only one parameter - the device pb config
+  required string service_cmd = 5;
+  repeated string service_argv = 6;
+}
+
+message BasicMutableState {
+  enum Mode {
+    // Turn off the driver
+    OFF = 0;
+    // Saving to Local
+    LOCAL_SAVING = 1;
+    // Sharing to the BATs node for the other node access
+    SHARING = 2;
+    // Streaming to server
+    REMOTE_STREAMING = 3;
+  };
+  optional Mode mode = 1 [ default = LOCAL_SAVING ];
+}

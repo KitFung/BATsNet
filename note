@@ -1,0 +1,1 @@
+ffplay -flags low_delay -framedrop -strict experimental -avioflags direct -fflags discardcorrupt -fflags nobuffer -probesize 32 -sync ext -rtsp_transport tcp  -i

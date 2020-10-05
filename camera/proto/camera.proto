@@ -1,0 +1,30 @@
+syntax = "proto2";
+
+import "common.proto";
+
+package camera;
+
+enum CameraModel {
+  HIKVISION_21XX = 1;
+  TRAFI_ONE_195 = 2;
+}
+
+message ControllerConf {
+  required common.BasicConf base = 1;
+  required CameraModel model = 2;
+}
+
+message ControllerMutableState {
+  required common.BasicMutableState base = 1;
+  optional int32 frame_rate = 2;
+  optional int32 max_bitrate = 3;
+}
+
+message DeviceConf {
+  required ControllerConf conf = 1;
+  required ControllerMutableState state = 2;
+
+  required string stream_path = 3;
+  required string output_stream_path = 4;
+  optional string save_pattern = 5 [ default = "%Y-%m-%d-%H-%M-%S.mp4" ];
+}
