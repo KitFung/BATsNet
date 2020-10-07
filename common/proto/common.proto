@@ -2,6 +2,9 @@ syntax = "proto2";
 
 package common;
 
+message Empty {
+}
+
 message BasicConf {
   required string controller_identifier = 1;
   required string identifier = 2;
@@ -23,5 +26,5 @@ message BasicMutableState {
     // Streaming to server
     REMOTE_STREAMING = 3;
   };
-  optional Mode mode = 1 [ default = LOCAL_SAVING ];
+  required Mode mode = 1 [ default = LOCAL_SAVING ];
 }

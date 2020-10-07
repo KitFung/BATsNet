@@ -8,6 +8,8 @@ class ConfigHandler {
 public:
   ConfigHandler() {}
   virtual ~ConfigHandler() {}
-  virtual bool UpdateConfig(const ControllerMutableState &state) = 0;
+  virtual SetStateResponse
+  UpdateConfig(const ControllerMutableState &old_state,
+               const ControllerMutableState &new_state) = 0;
 };
 } // namespace camera

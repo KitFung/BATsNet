@@ -8,7 +8,9 @@ class TrafiOneConfigHandler : public ConfigHandler {
 public:
   TrafiOneConfigHandler();
   ~TrafiOneConfigHandler() override;
-  bool UpdateConfig(const ControllerMutableState &state) override;
+  SetStateResponse
+  UpdateConfig(const ControllerMutableState &old_state,
+               const ControllerMutableState &new_state) override;
 };
 
 } // namespace camera

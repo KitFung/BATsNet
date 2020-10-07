@@ -8,7 +8,9 @@ class HikvisionConfigHandler : public ConfigHandler {
 public:
   HikvisionConfigHandler() {}
   ~HikvisionConfigHandler() override;
-  bool UpdateConfig(const ControllerMutableState &state) override;
+  SetStateResponse
+  UpdateConfig(const ControllerMutableState &old_state,
+               const ControllerMutableState &new_state) override;
 };
 
 } // namespace camera

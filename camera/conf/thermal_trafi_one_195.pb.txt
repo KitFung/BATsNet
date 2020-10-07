@@ -2,9 +2,9 @@ conf: {
     base: {
         controller_identifier: "/_control/thermal/trafi_one_195/stream/1/lab/test1"
         identifier: "/thermal/trafi_one_195/stream/1/lab/test1"
-        device_config_path: ""
+        device_config_path: "/home/kit/dev/BATsNet/camera/conf/thermal_trafi_one_195_device.pb.txt"
         service_cmd: "/home/kit/dev/BATsNet/build/camera/camera"
-        service_argv: "/home/kit/dev/BATsNet/camera/conf/thermal_trafi_one_195.pb.txt"
+        service_argv: "/home/kit/dev/BATsNet/camera/conf/thermal_trafi_one_195_device.pb.txt"
     }
     model: TRAFI_ONE_195
 }

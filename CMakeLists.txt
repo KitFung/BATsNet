@@ -9,6 +9,7 @@ add_subdirectory(third_party)
 add_subdirectory(common)
 add_subdirectory(transport)
 add_subdirectory(service_discovery)
+add_subdirectory(device)
 add_subdirectory(scheduler)
 add_subdirectory(data_collector)
 

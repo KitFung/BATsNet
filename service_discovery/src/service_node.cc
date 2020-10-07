@@ -20,6 +20,8 @@ ServiceNode::ServiceNode(const std::string &identifier, const int port)
   } else {
     val_ = RetreiveBrokerIP() + ":" + std::to_string(cport_);
   }
+  // Avoid the restart to fast and let register fail
+  std::this_thread::sleep_for(std::chrono::seconds(loop_interval_s_ * 4));
   inner_loop_ = std::thread([&] { InnerLoop(); });
   // Just a interval to it register
   std::this_thread::sleep_for(std::chrono::seconds(1));
