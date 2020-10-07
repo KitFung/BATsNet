@@ -10,6 +10,18 @@ service Controller {
   rpc SetState(ControllerMutableState) returns (SetStateResponse) {}
 }
 
+message SetStateError {
+  enum ErrorType { NOT_SUPPORT = 1; }
+  required string field = 1;
+  required ErrorType type = 2;
+}
+
+message SetStateResponse {
+  required ControllerMutableState last_state = 1;
+  repeated SetStateError error = 2;
+}
+///////////////////////////////
+
 enum CameraModel {
   HIKVISION_21XX = 1;
   TRAFI_ONE_195 = 2;
@@ -33,15 +45,4 @@ message DeviceConf {
   required string stream_path = 3;
   required string output_stream_path = 4;
   optional string save_pattern = 5 [ default = "%Y-%m-%d-%H-%M-%S.mp4" ];
-}
-
-message SetStateError {
-  enum ErrorType { NOT_SUPPORT = 1; }
-  required string field = 1;
-  required ErrorType type = 2;
-}
-
-message SetStateResponse {
-  required ControllerMutableState last_state = 1;
-  repeated SetStateError error = 2;
 }

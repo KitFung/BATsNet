@@ -11,7 +11,7 @@
 
 #include "service_discovery/include/service_node.h"
 
-#include "include/camera_control.h"
+#include "include/radar_control.h"
 
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
-  camera::DeviceConf conf;
+  radar::DeviceConf conf;
   int fd = open(argv[1], O_RDONLY);
   google::protobuf::io::FileInputStream fstream(fd);
   if (!google::protobuf::TextFormat::Parse(&fstream, &conf)) {
@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
 
   std::string server_address = "0.0.0.0:";
   server_address += base_conf.control_service_port();
-  camera::CameraControl controller(conf);
+  radar::RadarControl controller(conf);
   grpc::EnableDefaultHealthCheckService(true);
   grpc::reflection::InitProtoReflectionServerBuilderPlugin();
   ServerBuilder builder;

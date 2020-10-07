@@ -17,10 +17,19 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen)
 EXEC_PROGRAM(protoc 
-  ARGS -I=${CMAKE_CURRENT_SOURCE_DIR}/proto
+  ARGS --grpc_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
+       -I=${CMAKE_CURRENT_SOURCE_DIR}/proto
+       -I=${GLOBAL_HEADER}/common/proto
        --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
+       --plugin=protoc-gen-grpc=`which grpc_cpp_plugin`
        ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto)
-
+EXEC_PROGRAM(protoc 
+  ARGS --grpc_python_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
+      -I=${CMAKE_CURRENT_SOURCE_DIR}/proto
+      -I=${GLOBAL_HEADER}/common/proto
+      --python_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
+      --plugin=protoc-gen-grpc_python=`which grpc_python_plugin`
+      ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto)
 file(GLOB PROTO_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen/*.cc)
 file(GLOB CONF_FILES ${CMAKE_CURRENT_SOURCE_DIR}/conf/*)
 
@@ -28,10 +37,16 @@ add_library(radar_lib STATIC
   ${CMAKE_CURRENT_SOURCE_DIR}/src/iwr6843_read.cc
   ${PROTO_SRC_FILES})
 target_link_libraries(radar_lib ${Protobuf_LIBRARIES}
-  stdc++fs data_collector service_node transport)
+  stdc++fs data_collector service_node transport common)
 
-add_executable(radar_iwr6843 ${CMAKE_CURRENT_SOURCE_DIR}/src/radar.cc)
+add_executable(radar_iwr6843 ${CMAKE_CURRENT_SOURCE_DIR}/src/radar_iwr6843.cc)
 target_link_libraries(radar_iwr6843 radar_lib)
+
+add_library(radar_control_lib STATIC src/radar_control.cc src/iwr6843_control.cc)
+target_link_libraries(radar_control_lib radar_lib device grpc++ grpc++_reflection)
+
+add_executable(radar_controller src/controller.cc)
+target_link_libraries(radar_controller radar_control_lib service_node)
 
 add_executable(debug ${CMAKE_CURRENT_SOURCE_DIR}/src/radar_cross_node_debug.cc)
 target_link_libraries(debug radar_lib)

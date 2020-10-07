@@ -1,5 +1,32 @@
-write_topic: "/radar/iwr6843/raw/1/lab/test1"
-# conf: "/home/kit/dev/BATsNet/radar_iwr6843/conf/a.cfg"    
-# conf: "/opt/aiot/drivers/conf/radar/a.cfg"
-conf: "/home/kit/dev/BATsNet/radar_iwr6843/conf/a.cfg"
+conf: {
+    base: {
+        controller_identifier: "/_control/radar/iwr6843/parsed/1/lab/test1"
+        identifier: "/radar/iwr6843/parsed/1/lab/test1"
+        device_config_path: "/home/kit/dev/BATsNet/radar_iwr6843/conf/radar_device.pb.txt"
+        service_cmd: "/home/kit/dev/BATsNet/build/radar_iwr6843/radar_iwr6843"
+        service_argv: "/home/kit/dev/BATsNet/radar_iwr6843/conf/radar_device.pb.txt"
+        control_service_port: "50051"
+    }
+    model: IWR6843
+    possible_mode: {
+        key: "INDOOR"
+        value: "/home/kit/dev/BATsNet/radar_iwr6843/conf/a.cfg"
+    }
+    possible_mode {
+        key: "OUTDOOR"
+        value: "/home/kit/dev/BATsNet/radar_iwr6843/conf/a.cfg"
+    }
+}
+
+state: {
+    base: {
+        mode: SHARING
+        # mode: LOCAL_SAVING
+    }
+    current_mode: "INDOOR"
+}
+
 read_parsed: true
+
+data_collecter_ip: "192.168.100.3"
+data_collecter_port: 1883

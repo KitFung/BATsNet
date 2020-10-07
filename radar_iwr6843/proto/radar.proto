@@ -1,9 +1,40 @@
 syntax = "proto2";
 
+import "common.proto";
+
 package radar;
 
-enum Model {
-  IWR6843 = 0;
+service Controller {
+  rpc GetConf(common.Empty) returns (ControllerConf) {}
+  rpc GetState(common.Empty) returns (ControllerMutableState) {}
+  rpc SetState(ControllerMutableState) returns (SetStateResponse) {}
+}
+
+message SetStateError {
+  enum ErrorType { NOT_SUPPORT = 1; }
+  required string field = 1;
+  required ErrorType type = 2;
+}
+
+message SetStateResponse {
+  required ControllerMutableState last_state = 1;
+  repeated SetStateError error = 2;
+}
+
+//////////////////////////////////////
+
+enum Model { IWR6843 = 0; }
+
+message ControllerConf {
+  required common.BasicConf base = 1;
+  required Model model = 2;
+  // mode key, mode file path
+  map<string, string> possible_mode = 3;
+}
+
+message ControllerMutableState {
+  required common.BasicMutableState base = 1;
+  optional string current_mode = 2;
 }
 
 message RawRadarResult {
@@ -39,8 +70,12 @@ message MultiResult {
   repeated RadarResult parsed_result = 3;
 }
 
-message Conf {
-  required string conf = 1;
-  optional bool read_parsed = 2[default = false];
-  required string write_topic = 3;
+message DeviceConf {
+  required ControllerConf conf = 1;
+  required ControllerMutableState state = 2;
+
+  optional bool read_parsed = 3 [ default = false ];
+
+  required string data_collecter_ip = 4;
+  required int32 data_collecter_port = 5;
 }

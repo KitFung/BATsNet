@@ -1,10 +1,10 @@
 #pragma once
 
 #include "device/include/config_handler.hpp"
-#include "proto_gen/camera.pb.h"
+#include "proto_gen/radar.pb.h"
 
-namespace camera {
+namespace radar {
 
 using ConfigHandler =
     common::ConfigHandler<ControllerMutableState, SetStateResponse>;
-} // namespace camera
+} // namespace radar

@@ -8,10 +8,12 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include <chrono>
 #include <iostream>
 #include <memory>
 #include <mutex>
 #include <string>
+#include <thread>
 #include <unordered_set>
 #include <vector>
 
@@ -65,7 +67,8 @@ public:
 
       execv(cmd_.c_str(), const_cast<char **>(argv));
       delete[] argv;
-      printf("Failed\n");
+      // @TODO(kit) handle the case that cannot start regularrly
+      printf("\n\n>>>>>>>>>> Start Device Failed <<<<<<<<<<<<\n\n");
       exit(EXIT_FAILURE);
     } else {
       // printf("pid_ %d\n", pid_);
@@ -78,14 +81,11 @@ public:
     if (pid_ == 0) {
       return;
     }
-
     // Kill Process
     closed_pid_.emplace(pid_);
     kill(pid_, SIGTERM);
-    sleep(1);
     kill(pid_, SIGKILL);
     pid_ = 0;
-    sleep(1);
   }
 
   std::mutex &GetLock() { return mtx_; }

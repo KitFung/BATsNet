@@ -6,19 +6,19 @@
 #include "device/include/device_deamon.hpp"
 #include "include/common.h"
 
-#include "proto_gen/camera.grpc.pb.h"
+#include "proto_gen/radar.grpc.pb.h"
 
 using grpc::ServerContext;
 using grpc::Status;
 
-namespace camera {
+namespace radar {
 
-class CameraControl;
-using CameraDeamon = device::DeviceDeamon<CameraControl>;
+class RadarControl;
+using CameraDeamon = device::DeviceDeamon<RadarControl>;
 
-class CameraControl final : public camera::Controller::Service {
+class RadarControl final : public radar::Controller::Service {
 public:
-  CameraControl(const DeviceConf &device_conf);
+  RadarControl(const DeviceConf &device_conf);
   // API
   Status GetConf(ServerContext *context, const common::Empty *request,
                  ControllerConf *reply) override;
@@ -28,7 +28,7 @@ public:
                   SetStateResponse *reply) override;
 
 private:
-  void BuildHandler(const CameraModel &model);
+  void BuildHandler(const Model &model);
   bool HandleHewConf(const ControllerMutableState &new_state,
                      SetStateResponse *reply);
   void WriteNewDeviceConf();

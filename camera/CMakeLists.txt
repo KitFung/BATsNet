@@ -16,13 +16,13 @@ EXEC_PROGRAM(protoc
        --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
        --plugin=protoc-gen-grpc=`which grpc_cpp_plugin`
        ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto)
-EXEC_PROGRAM(protoc 
-  ARGS --grpc_python_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
-      -I=${CMAKE_CURRENT_SOURCE_DIR}/proto
-      -I=${GLOBAL_HEADER}/common/proto
-      --python_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
-      --plugin=protoc-gen-grpc_python=`which grpc_python_plugin`
-      ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto)
+# EXEC_PROGRAM(protoc 
+#   ARGS --grpc_python_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
+#       -I=${CMAKE_CURRENT_SOURCE_DIR}/proto
+#       -I=${GLOBAL_HEADER}/common/proto
+#       --python_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
+#       --plugin=protoc-gen-grpc_python=`which grpc_python_plugin`
+#       ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto)
 file(GLOB PROTO_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen/*.cc)
 
 include_directories(${GLOBAL_HEADER})
