@@ -1,0 +1,54 @@
+syntax = "proto2";
+
+import "common.proto";
+import "velodyne.proto";
+import "rslidar.proto";
+
+package lidar;
+
+service Controller {
+  rpc GetConf(common.Empty) returns (ControllerConf) {}
+  rpc GetState(common.Empty) returns (ControllerMutableState) {}
+  rpc SetState(ControllerMutableState) returns (SetStateResponse) {}
+}
+
+message SetStateError {
+  enum ErrorType { NOT_SUPPORT = 1; }
+  required string field = 1;
+  required ErrorType type = 2;
+}
+
+message SetStateResponse {
+  required ControllerMutableState last_state = 1;
+  repeated SetStateError error = 2;
+}
+
+enum LidarModel {
+  RSLIDAR = 1;
+  VELODYNE = 2;
+}
+
+message ControllerConf {
+  required common.BasicConf base = 1;
+  required LidarModel model = 2;
+}
+
+message ControllerMutableState {
+  required common.BasicMutableState base = 1;
+  //
+  optional float cut_angle = 2;
+}
+
+message DeviceConf {
+  required ControllerConf conf = 1;
+  required ControllerMutableState state = 2;
+
+  oneof model_conf {
+    rslidar.Conf rslidar_conf = 3;
+    velodyne.VelodyneDriverConf velodyne_conf = 4;
+  };
+  reserved 5 to 13;
+
+  required string data_collecter_ip = 14;
+  required int32 data_collecter_port = 15;
+}

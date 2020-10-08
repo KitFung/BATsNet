@@ -1,0 +1,7 @@
+device_ip: "192.168.1.200"
+model: "RS16"
+difop_port: 7788
+# cut_angle: -0.01
+cut_angle: 0
+ipc_topic_name: "/lidar/rslidar/scan"
+# output_difop_topic: "/lidar/rslidar/difop/1/lab/test1"

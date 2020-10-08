@@ -55,7 +55,7 @@ public:
       disconnect();
       connected_ = false;
       read_actived_ = false;
-      std::cout << "The service down" << std::endl;
+      std::cout << "[BlockChannel] Detect service down" << std::endl;
       return false;
     }
 
@@ -87,11 +87,15 @@ private:
   bool InitMos() {
     // Step 1. Get Destination
     if (!helper_.GetAddress(channel_, &addr_, &port_)) {
-      std::cerr << "Failed to found existing channel" << std::endl;
+      std::cerr << "[BlockChannel] Failed to found existing channel"
+                << std::endl;
       return false;
     }
+    std::cout << "[BlockChannel] MOS Connecting to " << addr_ << " " << port_
+              << std::endl;
     connect(addr_.c_str(), port_);
-    std::cout << "MOS Connected to " << addr_ << " " << port_ << std::endl;
+    std::cout << "[BlockChannel] MOS Connected to " << addr_ << " " << port_
+              << std::endl;
     loop_start();
     connected_ = true;
 

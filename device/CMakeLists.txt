@@ -15,5 +15,5 @@ find_package(Protobuf REQUIRED)
 # file(GLOB PROTO_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen/*.cc)
 
 add_library(device INTERFACE)
-target_link_libraries(device INTERFACE common)
+target_link_libraries(device INTERFACE common grpc++ grpc++_reflection)
 target_include_directories(device INTERFACE include)

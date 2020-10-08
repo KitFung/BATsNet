@@ -13,11 +13,10 @@ add_subdirectory(device)
 add_subdirectory(scheduler)
 add_subdirectory(data_collector)
 
-# add_subdirectory(rslidar)
 add_subdirectory(radar_iwr6843)
 add_subdirectory(camera)
+add_subdirectory(lidar)
 
-# add_subdirectory(velodyne)
 # add_subdirectory(server_side)
 
 install(FILES env.sh DESTINATION /opt/aiot/drivers/)

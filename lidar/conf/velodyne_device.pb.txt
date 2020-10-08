@@ -1,0 +1,31 @@
+conf {
+  base {
+    controller_identifier: "/_control/lidar/velodyne/scan/1/lab/test1"
+    identifier: "/lidar/velodyne/scan/1/lab/test1"
+    device_config_path: "/home/kit/dev/BATsNet/lidar/conf/velodyne_device.pb.txt"
+    service_cmd: "/home/kit/dev/BATsNet/build/lidar/velodyne"
+    service_argv: "/home/kit/dev/BATsNet/lidar/conf/velodyne_device.pb.txt"
+    control_service_port: "50051"
+  }
+  model: VELODYNE
+}
+state {
+  base {
+    mode: SHARING
+  }
+}
+velodyne_conf {
+  model: "VLP16"
+  rpm: 600
+  timestamp_first_packet: false
+  cut_angle: -0.01
+  port: 2368
+  device_ip: "10.42.0.3"
+  gps_time: false
+  read_once: false
+  read_fast: false
+  repeat_delay: 0
+  ipc_topic_name: "/velodyne/scan2"
+}
+data_collecter_ip: "192.168.100.3"
+data_collecter_port: 1883

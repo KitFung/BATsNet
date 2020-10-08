@@ -1,0 +1,27 @@
+syntax = "proto2";
+
+package rslidar;
+
+message Packet {
+  required double timestamp = 1;
+  required int32 seq = 2;
+  required bytes data = 3;
+}
+
+message Scan {
+  required double timestamp = 1;
+  required int32 seq = 2;
+  repeated Packet packet = 3;
+}
+
+message Conf {
+  optional string device_ip = 1;
+  optional string model = 2;
+  optional double rpm = 3;
+  optional int32 npackets = 4;
+  optional int32 msop_port = 5;
+  optional int32 difop_port = 6;
+  optional double cut_angle = 7;
+
+  required string ipc_topic_name = 8;
+}

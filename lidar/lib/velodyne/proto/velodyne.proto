@@ -1,0 +1,57 @@
+syntax = "proto2";
+
+package velodyne;
+
+// Unit of stamp is second
+message VelodynePacket {
+  required double stamp = 1;
+  required bytes data = 2;
+}
+
+message VelodyneScan {
+  required double stamp = 1;
+  repeated VelodynePacket packets = 2;
+}
+
+message VelodyneDriverConf {
+  required string model = 1;
+  optional double rpm = 2;
+  optional int32 npackets = 3;
+  optional bool timestamp_first_packet = 4 [ default = false ];
+  optional string pcap = 5;
+  optional double cut_angle = 6;
+  optional int32 port = 7;
+
+  required string device_ip = 8;
+  optional bool gps_time = 9 [ default = false ];
+
+  optional bool read_once = 10 [ default = false ];
+  optional bool read_fast = 11 [ default = false ];
+  optional double repeat_delay = 12 [default = 0.0];
+
+  required string ipc_topic_name = 13;
+}
+
+message PointXYZIRT {
+  required float x = 1;
+  required float y = 2;
+  required float z = 3;
+  optional float intensity = 4 [default = 0];
+  optional float ring = 5 [default = 0];
+  optional float time = 6 [default = 0];
+};
+
+message PointCloud {
+  required double stamp = 1;
+  repeated PointXYZIRT point = 2;
+}
+
+message VelodynePointCloudConf {
+  required string model = 1;
+  required string calibration = 2;
+  required double max_range = 3;
+  required double min_range = 4;
+
+  required string scan_topic_name = 5;
+  required string cloud_topic_name = 6;
+}

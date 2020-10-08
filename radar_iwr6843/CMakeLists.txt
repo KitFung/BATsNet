@@ -43,7 +43,7 @@ add_executable(radar_iwr6843 ${CMAKE_CURRENT_SOURCE_DIR}/src/radar_iwr6843.cc)
 target_link_libraries(radar_iwr6843 radar_lib)
 
 add_library(radar_control_lib STATIC src/radar_control.cc src/iwr6843_control.cc)
-target_link_libraries(radar_control_lib radar_lib device grpc++ grpc++_reflection)
+target_link_libraries(radar_control_lib radar_lib device)
 
 add_executable(radar_controller src/controller.cc)
 target_link_libraries(radar_controller radar_control_lib service_node)

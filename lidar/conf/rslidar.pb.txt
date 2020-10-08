@@ -1,0 +1,32 @@
+conf {
+    base {
+        controller_identifier: "/_control/lidar/rslidar/scan/1/lab/test1"
+        identifier: "/lidar/rslidar/scan/1/lab/test1"
+
+        device_config_path: "/home/kit/dev/BATsNet/lidar/conf/rslidar_device.pb.txt"
+        service_cmd: "/home/kit/dev/BATsNet/build/lidar/rslidar"
+        service_argv: "/home/kit/dev/BATsNet/lidar/conf/rslidar_device.pb.txt"
+
+        control_service_port: "50051"
+    }
+    model: RSLIDAR
+}
+
+state {
+    base {
+        mode: SHARING
+        # mode: LOCAL_SAVING
+    }
+}
+
+rslidar_conf {
+    device_ip: "192.168.1.200"
+    model: "RS16"
+    difop_port: 7788
+    # cut_angle: -0.01
+    cut_angle: 0
+    ipc_topic_name: "/rslidar/scan"
+}
+
+data_collecter_ip: "192.168.100.3"
+data_collecter_port: 1883
