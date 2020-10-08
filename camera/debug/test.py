@@ -1,5 +1,6 @@
 import sys
 import os
+import time
 import grpc
 import common_pb2
 import camera_pb2 
@@ -19,14 +20,18 @@ def run():
     state.base.mode = common_pb2.BasicMutableState.Mode.Value('OFF')
     res = stub.SetState(state)
     print(res)
-    # print("-----------SHARING----------")
-    # state.base.mode = common_pb2.BasicMutableState.Mode.Value('SHARING')
-    # res = stub.SetState(state)
-    # print(res)
-    # print("-----------LocalSaving----------")
-    # state.base.mode = common_pb2.BasicMutableState.Mode.Value('LOCAL_SAVING')
-    # res = stub.SetState(state)
-    # print(res)
+    time.sleep(5)
+    
+    print("-----------SHARING----------")
+    state.base.mode = common_pb2.BasicMutableState.Mode.Value('SHARING')
+    res = stub.SetState(state)
+    print(res)
+    time.sleep(5)
+
+    print("-----------LocalSaving----------")
+    state.base.mode = common_pb2.BasicMutableState.Mode.Value('LOCAL_SAVING')
+    res = stub.SetState(state)
+    print(res)
 
 if __name__ == '__main__':
     run()

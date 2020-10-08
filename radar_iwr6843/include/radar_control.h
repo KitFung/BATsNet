@@ -1,15 +1,8 @@
 #pragma once
 
-#include <memory>
-#include <mutex>
-
 #include "device/include/device_control.hpp"
-#include "include/common.h"
 
 #include "proto_gen/radar.grpc.pb.h"
-
-using grpc::ServerContext;
-using grpc::Status;
 
 namespace radar {
 

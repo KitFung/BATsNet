@@ -1,10 +1,6 @@
 #pragma once
 
-#include <memory>
-#include <mutex>
-
-#include "device/include/device_deamon.hpp"
-#include "include/common.h"
+#include "device/include/device_control.hpp"
 
 #include "proto_gen/camera.grpc.pb.h"
 
@@ -13,35 +9,16 @@ using grpc::Status;
 
 namespace camera {
 
-class CameraControl;
-using CameraDeamon = device::DeviceDeamon<CameraControl>;
+using BaseControl =
+    device::BaseControl<DeviceConf, ControllerConf, ControllerMutableState,
+                        SetStateResponse, camera::Controller::Service>;
 
-class CameraControl final : public camera::Controller::Service {
+class CameraControl final : public BaseControl {
 public:
   CameraControl(const DeviceConf &device_conf);
-  // API
-  Status GetConf(ServerContext *context, const common::Empty *request,
-                 ControllerConf *reply) override;
-  Status GetState(ServerContext *context, const common::Empty *request,
-                  ControllerMutableState *reply) override;
-  Status SetState(ServerContext *context, const ControllerMutableState *request,
-                  SetStateResponse *reply) override;
 
-private:
-  void BuildHandler(const CameraModel &model);
-  bool HandleHewConf(const ControllerMutableState &new_state,
-                     SetStateResponse *reply);
-  void WriteNewDeviceConf();
-
-  ControllerConf conf_;
-  ControllerMutableState state_;
-  DeviceConf device_conf_;
-  std::unique_ptr<ConfigHandler> conf_handler_;
-
-  bool running_ = true;
-  std::mutex state_mtx_;
-  pid_t pid_ = 0;
-  std::unique_ptr<CameraDeamon> deamon_;
+protected:
+  void BuildHandler() override;
 };
 
 } // namespace camera
