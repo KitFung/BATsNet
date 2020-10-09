@@ -7,7 +7,7 @@ conf {
         service_cmd: "/home/kit/dev/BATsNet/build/lidar/velodyne"
         service_argv: "/home/kit/dev/BATsNet/lidar/conf/velodyne_device.pb.txt"
 
-        control_service_port: "50051"
+        # control_service_port: "50051"
     }
     model: VELODYNE
 }

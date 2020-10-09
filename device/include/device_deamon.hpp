@@ -113,7 +113,8 @@ public:
       if (!should_up_) {
         return;
       }
-      std::cout << "Catch Child Process Killed. Restart" << std::endl;
+      std::cout << "Catch Child Process Killed. Restart. PID: " << pid
+                << std::endl;
       auto obj = GetSingleton();
       obj->pid_ = 0;
       obj->StartDevice();

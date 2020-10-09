@@ -11,7 +11,6 @@ LidarControl::LidarControl(const DeviceConf &device_conf)
 
 void LidarControl::BuildHandler() {
   auto model = conf_.model();
-  std::cout << "BuildHandler called" << std::endl;
   switch (model) {
   case LidarModel::VELODYNE:
     // ConfHandler().reset(new IWR68943ConfigHandler());

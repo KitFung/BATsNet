@@ -16,10 +16,14 @@ namespace service_discovery {
  */
 class ServiceNode {
 public:
-  ServiceNode(const std::string &identifier, const int port = 0);
+  // If local port is zero, it mean the service is accessable in remote directly
+  // Otherwise, it mean it need the remote to proxy the packet to local port
+  ServiceNode(const std::string &identifier, const int remote_port = 0,
+              const int local_port = 0);
   ~ServiceNode();
 
 private:
+  std::string SendUdp(const std::string &msg) const;
   // The IP is the BATs IP, so must get from BATS
   std::string RetreiveBrokerIP() const;
   // The MQTT port is seted in GLOBAL ENV, so get from env
@@ -28,6 +32,7 @@ private:
   // Register itself to etcd. (identifier, IP:port)
   void Register();
   void RenewRegister();
+  void ValidProxyAlive();
 
   // Loop, Renew it register frequently
   void InnerLoop();
@@ -36,7 +41,8 @@ private:
   std::string val_;
   std::thread inner_loop_;
   std::shared_ptr<etcd::Client> etcd_;
-  int cport_ = 0;
+  int broker_port_ = 0;
+  int local_port_ = 0;
   int loop_interval_s_ = 2;
   std::atomic<int> registered_ = {0};
   int running_ = true;

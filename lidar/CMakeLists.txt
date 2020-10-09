@@ -20,6 +20,9 @@ EXEC_PROGRAM(protoc
        -I=${CMAKE_CURRENT_SOURCE_DIR}/lib/rslidar/proto
        --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
        --plugin=protoc-gen-grpc=`which grpc_cpp_plugin`
+       --grpc_python_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
+       --python_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
+       --plugin=protoc-gen-grpc_python=`which grpc_python_plugin`
        ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto)
 file(GLOB PROTO_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen/*.cc)
 

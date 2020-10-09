@@ -10,7 +10,6 @@ RadarControl::RadarControl(const DeviceConf &device_conf)
 
 void RadarControl::BuildHandler() {
   auto model = conf_.model();
-  std::cout << "BuildHandler called" << std::endl;
   switch (model) {
   case Model::IWR6843:
     ConfHandler().reset(new IWR68943ConfigHandler());

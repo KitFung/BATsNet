@@ -14,7 +14,7 @@ message BasicConf {
   required string service_cmd = 5;
   repeated string service_argv = 6;
 
-  required string control_service_port = 7;
+  optional string control_service_port = 7;
 }
 
 message BasicMutableState {

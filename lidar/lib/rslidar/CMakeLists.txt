@@ -18,6 +18,7 @@ file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen)
 EXEC_PROGRAM(protoc 
   ARGS -I=${CMAKE_CURRENT_SOURCE_DIR}/proto
        --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
+       --python_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
        ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto)
 
 add_library(rslidar_proto STATIC proto_gen/rslidar.pb.cc)

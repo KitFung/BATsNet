@@ -11,14 +11,17 @@
 
 namespace service_discovery {
 
-ServiceNode::ServiceNode(const std::string &identifier, const int port)
-    : identifier_(identifier), cport_(port) {
+ServiceNode::ServiceNode(const std::string &identifier, const int remote_port,
+                         const int local_port)
+    : identifier_(identifier), broker_port_(remote_port),
+      local_port_(local_port) {
+  std::cout << "local_portlocal_portlocal_port: " << local_port << std::endl;
   etcd_ = std::make_shared<etcd::Client>(ketcd_src);
-  std::cout << "Connected to etcd: " << ketcd_src << std::endl;
-  if (cport_ == 0) {
+  std::cout << "[ServiceNode] Connected to etcd: " << ketcd_src << std::endl;
+  if (broker_port_ == 0) {
     val_ = RetreiveBrokerIP() + ":" + std::to_string(RetreiveEnvPort());
   } else {
-    val_ = RetreiveBrokerIP() + ":" + std::to_string(cport_);
+    val_ = RetreiveBrokerIP() + ":" + std::to_string(broker_port_);
   }
   // Avoid the restart to fast and let register fail
   std::this_thread::sleep_for(std::chrono::seconds(loop_interval_s_ * 4));
@@ -37,11 +40,11 @@ ServiceNode::~ServiceNode() {
   }
 }
 
-std::string ServiceNode::RetreiveBrokerIP() const {
+std::string ServiceNode::SendUdp(const std::string &msg) const {
   // Simlpe UDP
   int sockfd;
   char buffer[1024];
-  const char *msg = "GET_IP";
+  const char *c_msg = msg.c_str();
   struct sockaddr_in servaddr;
 
   if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
@@ -62,7 +65,7 @@ std::string ServiceNode::RetreiveBrokerIP() const {
   int n = 0;
   socklen_t len;
 
-  sendto(sockfd, (const char *)msg, strlen(msg), MSG_CONFIRM,
+  sendto(sockfd, (const char *)c_msg, msg.size(), MSG_CONFIRM,
          (const struct sockaddr *)&servaddr, sizeof(servaddr));
   n = recvfrom(sockfd, (char *)buffer, sizeof(buffer), MSG_WAITALL,
                (struct sockaddr *)&servaddr, &len);
@@ -76,25 +79,42 @@ std::string ServiceNode::RetreiveBrokerIP() const {
   return std::string(buffer);
 }
 
+std::string ServiceNode::RetreiveBrokerIP() const {
+  std::string msg("GET_IP");
+  return SendUdp(msg);
+}
+
 int ServiceNode::RetreiveEnvPort() const {
-  if (const char *port = std::getenv("SERVICE_BROKER_PORT")) {
-    int p = std::atoi(port);
-    return p;
+  if (local_port_ == 0) {
+    // Don't the remote side setup proxy
+    if (const char *port = std::getenv("SERVICE_BROKER_PORT")) {
+      int p = std::atoi(port);
+      return p;
+    }
+    return 1883;
+  } else {
+    // Require the remote side setup proxy
+    std::string msg("GET_PROXY_PORT|");
+    msg += identifier_ + "|" + std::to_string(local_port_);
+    std::cout << "[ServiceNode] Send msg: " << msg << std::endl;
+    std::string respond = SendUdp(msg);
+    std::cout << "[ServiceNode] Respond is " << respond << std::endl;
+    return std::stoi(respond);
   }
-  return 1883;
 }
 
 void ServiceNode::Register() {
   auto respond = etcd_->add(identifier_, val_, loop_interval_s_ * 3).get();
-  std::cout << "Registered as: " << identifier_ << " -> "
+  std::cout << "[ServiceNode] Registered as: " << identifier_ << " -> "
             << etcd_->get(identifier_).get().value().as_string() << std::endl;
 
   int err_code = respond.error_code();
   if (err_code != 0) {
-    std::cout << "err_code: " << err_code << " " << respond.error_message()
-              << std::endl;
+    std::cout << "[ServiceNode] err_code: " << err_code << " "
+              << respond.error_message() << std::endl;
     if (err_code == 105) {
-      perror("Another process have register the same id");
+      std::cerr << "[ServiceNode] Another process have register the same id"
+                << std::endl;
       exit(EXIT_FAILURE);
     }
   }
@@ -105,11 +125,23 @@ void ServiceNode::RenewRegister() {
   etcd_->set(identifier_, val_, loop_interval_s_ * 3);
 }
 
+void ServiceNode::ValidProxyAlive() {
+  auto proxy_val = etcd_->get(val_).get().value().as_string();
+  if (proxy_val != identifier_) {
+    std::cerr << "[ServiceNode] Some unexpected issue to the proxy"
+              << std::endl;
+    exit(EXIT_FAILURE);
+  }
+}
+
 void ServiceNode::InnerLoop() {
   Register();
   while (running_) {
     std::this_thread::sleep_for(std::chrono::seconds(loop_interval_s_));
     RenewRegister();
+    if (local_port_ != 0) {
+      ValidProxyAlive();
+    }
   }
 }
 
