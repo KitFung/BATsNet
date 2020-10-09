@@ -10,7 +10,7 @@
 
 #include "data_collector/include/data_collector.h"
 #include "iwr6843_read.h"
-#include "proto_gen/radar.pb.h"
+#include "proto/radar.pb.h"
 
 #include "service_discovery/include/service_node.h"
 #include "transport/include/block_channel.h"

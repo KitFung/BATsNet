@@ -1,7 +1,7 @@
 #pragma once
 
 #include "device/include/config_handler.hpp"
-#include "proto_gen/radar.pb.h"
+#include "proto/radar.pb.h"
 
 namespace radar {
 

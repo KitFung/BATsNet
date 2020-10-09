@@ -6,7 +6,7 @@
 #include <thread>
 
 #include "transport/include/ipc.h"
-#include "transport/proto_gen/simple.pb.h"
+#include "transport/proto/simple.pb.h"
 
 namespace {
 

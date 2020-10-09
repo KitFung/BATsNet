@@ -32,7 +32,6 @@ int main(int argc, char *argv[]) {
 
   const auto &base_conf = conf.conf().base();
   const auto &base_state = conf.state().base();
-  service_discovery::ServiceNode node(base_conf.controller_identifier());
 
   std::string server_address = "0.0.0.0";
   if (base_conf.has_control_service_port()) {

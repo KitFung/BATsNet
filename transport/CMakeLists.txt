@@ -6,10 +6,10 @@ find_package(Protobuf REQUIRED)
 
 set(EXTERNAL_INSTALL_LOCATION ${CMAKE_BINARY_DIR}/external)
 
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen)
+
 EXEC_PROGRAM(protoc 
   ARGS -I=${CMAKE_CURRENT_SOURCE_DIR}/proto
-       --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
+       --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto
        ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto)
 
 ExternalProject_Add(cpp-ipc
@@ -37,10 +37,10 @@ target_include_directories(transport INTERFACE include/ ${SOURCE_DIR}/..)
 target_link_libraries(transport INTERFACE ipc pthread rt mosquitto mosquittopp service_discovery)
 target_compile_options (transport INTERFACE -Wno-deprecated-declarations)
 
-add_executable(ipc_test src/ipc_test.cc proto_gen/simple.pb.cc)
+add_executable(ipc_test src/ipc_test.cc proto/simple.pb.cc)
 target_link_libraries(ipc_test transport ${Protobuf_LIBRARIES})
 
-add_executable(block_message_test src/block_message_test.cc proto_gen/simple.pb.cc)
+add_executable(block_message_test src/block_message_test.cc proto/simple.pb.cc)
 target_link_libraries(block_message_test transport ${Protobuf_LIBRARIES} service_discovery service_node)
 
 add_subdirectory(binding/python)

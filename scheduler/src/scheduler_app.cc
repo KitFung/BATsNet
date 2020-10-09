@@ -13,7 +13,7 @@
 #include <google/protobuf/text_format.h>
 
 #include "include/scheduler.h"
-#include "proto_gen/scheduler.pb.h"
+#include "proto/scheduler.pb.h"
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {

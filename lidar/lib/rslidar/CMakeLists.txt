@@ -14,20 +14,20 @@ endif()
 include_directories(${Protobuf_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen)
+
 EXEC_PROGRAM(protoc 
   ARGS -I=${CMAKE_CURRENT_SOURCE_DIR}/proto
-       --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
-       --python_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
+       --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto
+       --python_out=${CMAKE_CURRENT_SOURCE_DIR}/proto
        ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto)
 
-add_library(rslidar_proto STATIC proto_gen/rslidar.pb.cc)
+add_library(rslidar_proto STATIC proto/rslidar.pb.cc)
 target_link_libraries(rslidar_proto ${Protobuf_LIBRARIES})
-target_include_directories(rslidar_proto PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen)
+target_include_directories(rslidar_proto PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/proto)
        
 add_library(rslidar_lib STATIC src/input.cc src/rsdriver.cpp)
 target_link_libraries(rslidar_lib rslidar_proto ${Boost_LIBRARIES})
-target_include_directories(rslidar_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(rslidar_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/proto ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # install(DIRECTORY DESTINATION /opt/aiot/drivers/bin)
 # install(DIRECTORY conf/ DESTINATION /opt/aiot/drivers/conf/rslidar)

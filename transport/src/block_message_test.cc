@@ -5,7 +5,7 @@
 #include "service_discovery/include/service_node.h"
 #include "transport/include/block_channel.h"
 
-#include "transport/proto_gen/simple.pb.h"
+#include "transport/proto/simple.pb.h"
 
 using Channel = transport::BlockChannel<transport::Message>;
 

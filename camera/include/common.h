@@ -1,7 +1,7 @@
 #pragma once
 
 #include "device/include/config_handler.hpp"
-#include "proto_gen/camera.pb.h"
+#include "proto/camera.pb.h"
 
 namespace camera {
 

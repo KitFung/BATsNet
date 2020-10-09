@@ -18,7 +18,7 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "proto_gen/radar.pb.h"
+#include "proto/radar.pb.h"
 
 namespace radar {
 constexpr int kMaxBufSize = 1 << 16;

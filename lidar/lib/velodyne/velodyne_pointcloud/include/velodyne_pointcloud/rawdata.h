@@ -49,7 +49,7 @@
 #include <string>
 #include <vector>
 
-#include "proto_gen/velodyne.pb.h"
+#include "proto/velodyne.pb.h"
 #include "velodyne_pointcloud/calibration.h"
 #include "velodyne_pointcloud/datacontainerbase.h"
 

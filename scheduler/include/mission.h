@@ -10,7 +10,7 @@
 #include <thread>
 
 #include "include/common.h"
-#include "proto_gen/scheduler.pb.h"
+#include "proto/scheduler.pb.h"
 
 namespace scheduler {
 class Mission {

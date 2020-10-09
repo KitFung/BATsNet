@@ -10,7 +10,7 @@
 
 #include "service_discovery/include/service_node.h"
 
-#include "proto_gen/camera.pb.h"
+#include "proto/camera.pb.h"
 
 void LocalSaving(const camera::DeviceConf &conf) {
   const auto &in_stream = conf.stream_path();

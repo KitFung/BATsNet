@@ -2,8 +2,8 @@
 
 #include "device/include/device_control.hpp"
 
-#include "proto_gen/lidar.grpc.pb.h"
-#include "proto_gen/lidar.pb.h"
+#include "proto/lidar.grpc.pb.h"
+#include "proto/lidar.pb.h"
 
 namespace lidar {
 

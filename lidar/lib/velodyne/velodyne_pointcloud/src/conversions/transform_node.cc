@@ -12,7 +12,7 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/text_format.h>
 
-#include "proto_gen/velodyne.pb.h"
+#include "proto/velodyne.pb.h"
 #include "velodyne_pointcloud/transform.h"
 
 int main(int argc, char *argv[]) {

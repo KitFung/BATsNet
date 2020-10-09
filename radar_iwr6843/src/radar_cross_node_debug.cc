@@ -5,7 +5,7 @@
 #include "service_discovery/include/service_node.h"
 #include "transport/include/block_channel.h"
 
-#include "proto_gen/radar.pb.h"
+#include "proto/radar.pb.h"
 
 using Channel = transport::BlockChannel<radar::RadarResult>;
 

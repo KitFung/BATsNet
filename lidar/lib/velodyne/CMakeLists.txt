@@ -13,21 +13,15 @@ find_package(Protobuf REQUIRED)
 
 # include_directories(${Protobuf_INCLUDE_DIRS})
 
-file(GLOB PB_FILE ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen/*)
-if (NOT "${PB_FILE}" STREQUAL "")
-  file(REMOVE ${PB_FILE})
-endif()
-
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen)
 EXEC_PROGRAM(protoc 
   ARGS -I=${CMAKE_CURRENT_SOURCE_DIR}/proto
-       --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
-       --python_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
+       --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto
+       --python_out=${CMAKE_CURRENT_SOURCE_DIR}/proto
        ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto)
 
-add_library(velodyne_proto STATIC proto_gen/velodyne.pb.cc)
+add_library(velodyne_proto STATIC proto/velodyne.pb.cc)
 target_link_libraries(velodyne_proto PUBLIC ${Protobuf_LIBRARIES})
-target_include_directories(velodyne_proto PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen)
+target_include_directories(velodyne_proto PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/proto)
 
 add_subdirectory(velodyne_driver)
 add_subdirectory(velodyne_pointcloud)

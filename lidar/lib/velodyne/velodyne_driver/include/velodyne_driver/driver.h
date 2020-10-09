@@ -38,7 +38,7 @@
 #include <string>
 #include <thread>
 
-#include "proto_gen/velodyne.pb.h"
+#include "proto/velodyne.pb.h"
 #include "velodyne_driver/input.h"
 
 namespace velodyne_driver {

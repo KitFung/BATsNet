@@ -18,13 +18,13 @@ find_package(Protobuf REQUIRED)
 include_directories(${Protobuf_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen)
+
 EXEC_PROGRAM(protoc 
   ARGS -I=${CMAKE_CURRENT_SOURCE_DIR}/proto
-       --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
+       --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto
        ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto)
 
-add_library(scheduler_common STATIC src/common.cc proto_gen/scheduler.pb.cc)
+add_library(scheduler_common STATIC src/common.cc proto/scheduler.pb.cc)
 target_link_libraries(scheduler_common ${Protobuf_LIBRARIES})
 
 add_library(mission_lib SHARED src/mission.cc)
@@ -42,7 +42,7 @@ target_link_libraries(scheduler_lib ${Protobuf_LIBRARIES} stdc++fs scheduler_com
 add_executable(scheduler src/scheduler_app.cc)
 target_link_libraries(scheduler scheduler_lib ${Protobuf_LIBRARIES} stdc++fs)
 
-# file(GLOB SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen/*.cc)
+# file(GLOB SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.cc)
 # file(GLOB CONF_FILES ${CMAKE_CURRENT_SOURCE_DIR}/conf/*)
 # add_executable(radar_iwr6843 ${SRC_FILES})
 # target_link_libraries(radar_iwr6843 ${Protobuf_LIBRARIES} stdc++fs data_collector)

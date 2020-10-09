@@ -59,7 +59,7 @@
 #include <string>
 #include <unistd.h>
 
-#include "proto_gen/velodyne.pb.h"
+#include "proto/velodyne.pb.h"
 
 namespace velodyne_driver {
 

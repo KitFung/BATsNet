@@ -46,7 +46,7 @@
 #include <velodyne_pointcloud/pointcloudXYZIRT.h>
 #include <velodyne_pointcloud/rawdata.h>
 
-#include "proto_gen/velodyne.pb.h"
+#include "proto/velodyne.pb.h"
 
 #include "transport/include/ipc.h"
 

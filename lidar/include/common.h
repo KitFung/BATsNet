@@ -1,7 +1,7 @@
 #pragma once
 
 #include "device/include/config_handler.hpp"
-#include "proto_gen/lidar.pb.h"
+#include "proto/lidar.pb.h"
 
 namespace lidar {
 

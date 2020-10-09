@@ -39,7 +39,7 @@
 #include <memory>
 #include <string>
 
-#include "proto_gen/velodyne.pb.h"
+#include "proto/velodyne.pb.h"
 
 namespace velodyne_rawdata {
 class DataContainerBase {

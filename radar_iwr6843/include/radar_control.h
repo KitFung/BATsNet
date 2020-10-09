@@ -2,7 +2,7 @@
 
 #include "device/include/device_control.hpp"
 
-#include "proto_gen/radar.grpc.pb.h"
+#include "proto/radar.grpc.pb.h"
 
 namespace radar {
 

@@ -15,18 +15,18 @@ include_directories(${Protobuf_INCLUDE_DIRS})
 include_directories(${GLOBAL_HEADER})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen)
+
 EXEC_PROGRAM(protoc 
-  ARGS --grpc_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
+  ARGS --grpc_out=${CMAKE_CURRENT_SOURCE_DIR}/proto
        -I=${CMAKE_CURRENT_SOURCE_DIR}/proto
        -I=${GLOBAL_HEADER}/common/proto
-       --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
+       --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto
        --plugin=protoc-gen-grpc=`which grpc_cpp_plugin`
-       --grpc_python_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
-       --python_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
+       --grpc_python_out=${CMAKE_CURRENT_SOURCE_DIR}/proto
+       --python_out=${CMAKE_CURRENT_SOURCE_DIR}/proto
        --plugin=protoc-gen-grpc_python=`which grpc_python_plugin`
        ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto)
-file(GLOB PROTO_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen/*.cc)
+file(GLOB PROTO_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.cc)
 file(GLOB CONF_FILES ${CMAKE_CURRENT_SOURCE_DIR}/conf/*)
 
 add_library(radar_lib STATIC

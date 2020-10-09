@@ -11,7 +11,7 @@
 #include "service_discovery/include/service_node.h"
 #include "transport/include/block_channel.h"
 
-#include "proto_gen/lidar.pb.h"
+#include "proto/lidar.pb.h"
 
 using Channel = transport::BlockChannel<rslidar::Scan>;
 

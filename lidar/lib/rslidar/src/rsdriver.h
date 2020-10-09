@@ -22,7 +22,7 @@
 
 #include "input.h"
 
-#include "proto_gen/rslidar.pb.h"
+#include "proto/rslidar.pb.h"
 
 namespace rslidar {
 class rslidarDriver {

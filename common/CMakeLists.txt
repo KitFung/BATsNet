@@ -7,17 +7,17 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(Protobuf REQUIRED)
 
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen)
+
 EXEC_PROGRAM(protoc 
   ARGS -I=${CMAKE_CURRENT_SOURCE_DIR}/proto
-       --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
+       --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto
        ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto
-       --python_out=${CMAKE_CURRENT_SOURCE_DIR}/proto_gen
+       --python_out=${CMAKE_CURRENT_SOURCE_DIR}/proto
        --plugin=protoc-gen-grpc_python=`which grpc_python_plugin`)
-file(GLOB PROTO_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/proto_gen/*.cc)
+file(GLOB PROTO_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.cc)
 
-include_directories(proto_gen/)
+include_directories(proto/)
 
 add_library(common SHARED ${PROTO_SRC_FILES})
 target_link_libraries(common ${Protobuf_LIBRARIES})
-target_include_directories(common PUBLIC proto_gen/)
+target_include_directories(common PUBLIC proto/)

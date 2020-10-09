@@ -43,7 +43,7 @@
 
 #include <iostream>
 
-#include "proto_gen/rslidar.pb.h"
+#include "proto/rslidar.pb.h"
 
 namespace rslidar {
 static uint16_t MSOP_DATA_PORT_NUMBER = 6699; // rslidar default data port on PC

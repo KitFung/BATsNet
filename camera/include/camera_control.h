@@ -2,7 +2,7 @@
 
 #include "device/include/device_control.hpp"
 
-#include "proto_gen/camera.grpc.pb.h"
+#include "proto/camera.grpc.pb.h"
 
 using grpc::ServerContext;
 using grpc::Status;

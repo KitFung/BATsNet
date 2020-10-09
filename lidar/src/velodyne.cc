@@ -12,7 +12,7 @@
 #include "transport/include/block_channel.h"
 #include "transport/include/ipc.h"
 
-#include "proto_gen/lidar.pb.h"
+#include "proto/lidar.pb.h"
 
 using Channel = transport::BlockChannel<velodyne::VelodyneScan>;
 
