@@ -33,11 +33,11 @@ int main(int argc, char *argv[]) {
   const auto &base_conf = conf.conf().base();
   const auto &base_state = conf.state().base();
 
-  std::string server_address = "0.0.0.0";
+  std::string server_address = "0.0.0.0:";
   if (base_conf.has_control_service_port()) {
     server_address += base_conf.control_service_port();
   } else {
-    server_address += ":0";
+    server_address += "0";
   }
   radar::RadarControl controller(conf);
   grpc::EnableDefaultHealthCheckService(true);

@@ -12,7 +12,7 @@ const char kMagicWord[8] = {0x02, 0x01, 0x04, 0x03, 0x06, 0x05, 0x08, 0x07};
 double NowSec() {
   return std::chrono::duration_cast<std::chrono::milliseconds>(
              std::chrono::system_clock::now().time_since_epoch())
-             .count() *
+             .count() /
          1000.0;
 }
 

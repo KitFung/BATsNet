@@ -136,6 +136,7 @@ VelodyneDriver::VelodyneDriver(const velodyne::VelodyneDriverConf &conf) {
   }
 
   config_.enabled = true;
+  config_.time_offset = 0;
 
   // open Velodyne input device or file
   if (dump_file != "") // have PCAP file?

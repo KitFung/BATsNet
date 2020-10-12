@@ -111,7 +111,7 @@ InputSocket::~InputSocket(void) { (void)close(sockfd_); }
 double NowSec() {
   return std::chrono::duration_cast<std::chrono::milliseconds>(
              std::chrono::system_clock::now().time_since_epoch())
-             .count() *
+             .count() /
          1000.0;
 }
 /** @brief Get one rslidar packet. */

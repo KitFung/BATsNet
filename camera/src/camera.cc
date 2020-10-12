@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <sys/prctl.h>
 
 #include <boost/algorithm/string.hpp>
 
@@ -44,6 +45,18 @@ void LocalSaving(const camera::DeviceConf &conf) {
 void Sharing(const camera::DeviceConf &conf) {
   const auto &in_stream = conf.stream_path();
   const auto &out_stream = conf.output_stream_path();
+  int pid = fork();
+  if (pid == 0) {
+    service_discovery::ServiceNode node(conf.conf().base().identifier(),
+                                        out_stream);
+    int r = prctl(PR_SET_PDEATHSIG, SIGTERM);
+    if (r == -1) {
+      perror(0);
+      exit(EXIT_FAILURE);
+    }
+    while (true)
+      ;
+  }
   std::string cmd = "ffmpeg -flags low_delay -fflags nobuffer -i ";
   cmd += in_stream;
   cmd += " -codec copy -f rtsp ";
@@ -58,6 +71,7 @@ void Sharing(const camera::DeviceConf &conf) {
   for (int i = 0; i < argc; ++i) {
     argv[i] = strs[i].c_str();
   }
+  argv[argc] = nullptr;
   int ret = execvp("ffmpeg", const_cast<char **>(argv));
   if (ret == -1) {
     perror("Error while Sharing: ");
@@ -81,7 +95,6 @@ int main(int argc, char *argv[]) {
 
   const auto &base_conf = conf.conf().base();
   const auto &base_state = conf.state().base();
-  service_discovery::ServiceNode node(base_conf.identifier());
 
   switch (base_state.mode()) {
   case common::BasicMutableState::LOCAL_SAVING:

@@ -5,6 +5,18 @@
 #include <vector>
 
 namespace service_discovery {
+
+std::string GetServicePath(const std::string &identifier) {
+  auto etcd = std::make_shared<etcd::Client>(ketcd_src);
+  auto res = etcd->get(identifier).get();
+  if (res.error_code() != 0) {
+    std::cerr << "Error for key: [" << identifier << "] " << res.error_code()
+              << " " << res.error_message() << std::endl;
+    return "";
+  }
+  return res.value().as_string();
+}
+
 ServiceHelper::ServiceHelper() { InitClient(); }
 
 bool ServiceHelper::GetAddress(const std::string &identifier,

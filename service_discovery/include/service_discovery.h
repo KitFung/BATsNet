@@ -9,6 +9,8 @@
 
 namespace service_discovery {
 
+std::string GetServicePath(const std::string &identifier);
+
 class ServiceHelper {
 public:
   ServiceHelper();

@@ -17,6 +17,8 @@ void Read() {
   while (true) {
     if (channel.Receive(&msg)) {
       std::cout << "msg: " << msg.content() << std::endl;
+    } else {
+      std::this_thread::sleep_for(std::chrono::seconds(1));
     }
     std::this_thread::sleep_for(std::chrono::microseconds(100));
   }

@@ -100,6 +100,7 @@ rslidarDriver::rslidarDriver(Conf conf) {
   // Convert cut_angle from radian to one-hundredth degree,
   // which is used in rslidar packets
   config_.cut_angle = static_cast<int>(cut_angle * 100);
+  config_.time_offset = 0;
 
   // read data from live socket
   msop_input_.reset(new rslidar::InputSocket(conf, msop_udp_port));

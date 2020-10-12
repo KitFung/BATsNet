@@ -15,7 +15,6 @@ ServiceNode::ServiceNode(const std::string &identifier, const int remote_port,
                          const int local_port)
     : identifier_(identifier), broker_port_(remote_port),
       local_port_(local_port) {
-  std::cout << "local_portlocal_portlocal_port: " << local_port << std::endl;
   etcd_ = std::make_shared<etcd::Client>(ketcd_src);
   std::cout << "[ServiceNode] Connected to etcd: " << ketcd_src << std::endl;
   if (broker_port_ == 0) {
@@ -23,6 +22,21 @@ ServiceNode::ServiceNode(const std::string &identifier, const int remote_port,
   } else {
     val_ = RetreiveBrokerIP() + ":" + std::to_string(broker_port_);
   }
+  // Avoid the restart to fast and let register fail
+  std::this_thread::sleep_for(std::chrono::seconds(loop_interval_s_ * 4));
+  inner_loop_ = std::thread([&] { InnerLoop(); });
+  // Just a interval to it register
+  std::this_thread::sleep_for(std::chrono::seconds(1));
+}
+
+// For register video stream
+ServiceNode::ServiceNode(const std::string &identifier, const std::string &path)
+    : identifier_(identifier) {
+  etcd_ = std::make_shared<etcd::Client>(ketcd_src);
+  std::cout << "[ServiceNode] Connected to etcd: " << ketcd_src << std::endl;
+
+  val_ = path;
+
   // Avoid the restart to fast and let register fail
   std::this_thread::sleep_for(std::chrono::seconds(loop_interval_s_ * 4));
   inner_loop_ = std::thread([&] { InnerLoop(); });
@@ -98,7 +112,6 @@ int ServiceNode::RetreiveEnvPort() const {
     msg += identifier_ + "|" + std::to_string(local_port_);
     std::cout << "[ServiceNode] Send msg: " << msg << std::endl;
     std::string respond = SendUdp(msg);
-    std::cout << "[ServiceNode] Respond is " << respond << std::endl;
     return std::stoi(respond);
   }
 }

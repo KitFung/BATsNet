@@ -5,6 +5,7 @@
 #include <mosquitto.h>
 #include <mosquittopp.h>
 
+#include <condition_variable>
 #include <memory>
 #include <mutex>
 #include <thread>
@@ -66,10 +67,16 @@ public:
       return false;
     }
 
-    std::lock_guard<std::mutex> lock(q_mtx_);
-    if (msg_queue_.empty()) {
-      return false;
+    {
+      std::unique_lock<std::mutex> lock(q_mtx_);
+      if (msg_queue_.empty()) {
+        if (!q_cv_.wait_for(lock, std::chrono::milliseconds(timeout),
+                            [this] { return !msg_queue_.empty(); })) {
+          return false;
+        }
+      }
     }
+    std::lock_guard<std::mutex> lock(q_mtx_);
     *data = msg_queue_.front();
     msg_queue_.pop();
     return true;
@@ -111,11 +118,13 @@ private:
   void on_message(const mosquitto_message *message) override {
     std::lock_guard<std::mutex> lock(q_mtx_);
     T msg;
+    // std::cout << "message->payloadlen: " << message->payloadlen << std::endl;
     ParseRecvData(message, &msg);
     msg_queue_.emplace(std::move(msg));
     if (msg_queue_.size() > queue_max_size_) {
       msg_queue_.pop();
     }
+    q_cv_.notify_all();
   }
 
   std::string channel_;
@@ -125,8 +134,9 @@ private:
   int port_ = 0;
   service_discovery::ServiceHelper helper_;
 
-  const int queue_max_size_ = 5;
+  const int queue_max_size_ = 1;
   std::mutex q_mtx_;
+  std::condition_variable q_cv_;
   std::queue<T> msg_queue_;
 };
 

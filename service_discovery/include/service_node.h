@@ -20,6 +20,9 @@ public:
   // Otherwise, it mean it need the remote to proxy the packet to local port
   ServiceNode(const std::string &identifier, const int remote_port = 0,
               const int local_port = 0);
+
+  // For register video stream
+  ServiceNode(const std::string &identifier, const std::string &path);
   ~ServiceNode();
 
 private:

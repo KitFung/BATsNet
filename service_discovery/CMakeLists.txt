@@ -21,3 +21,5 @@ target_link_libraries(service_discovery etcd-cpp-api)
 
 add_executable(test_node src/test_node.cc)
 target_link_libraries(test_node service_node)
+
+add_subdirectory(binding)

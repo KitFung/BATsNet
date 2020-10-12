@@ -17,6 +17,6 @@ add_subdirectory(radar_iwr6843)
 add_subdirectory(camera)
 add_subdirectory(lidar)
 
-# add_subdirectory(server_side)
+add_subdirectory(server_side)
 
 install(FILES env.sh DESTINATION /opt/aiot/drivers/)

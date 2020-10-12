@@ -5,7 +5,6 @@ conf: {
         device_config_path: "/home/kit/dev/BATsNet/camera/conf/thermal_trafi_one_195_device.pb.txt"
         service_cmd: "/home/kit/dev/BATsNet/build/camera/camera"
         service_argv: "/home/kit/dev/BATsNet/camera/conf/thermal_trafi_one_195_device.pb.txt"
-        control_service_port: "50051"
     }
     model: TRAFI_ONE_195
 }
