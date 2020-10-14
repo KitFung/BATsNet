@@ -11,7 +11,11 @@ setuptools.setup(
     description="The python api for the lamppost project",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    packages=setuptools.find_packages(),
+    packages=['lamppost'],
+    package_data={'lamppost': [
+        'service_discovery_py.cpython-38-x86_64-linux-gnu.so',
+        'transport_py.cpython-38-x86_64-linux-gnu.so'
+    ]},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
