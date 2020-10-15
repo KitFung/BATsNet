@@ -45,4 +45,4 @@ target_link_libraries(block_message_test transport ${Protobuf_LIBRARIES} service
 
 add_subdirectory(binding/python)
 
-install(TARGETS ipc DESTINATION ${BATSNET_LIB_INSTALL_DIR})
+install(FILES ${SOURCE_DIR}/output/libipc.so DESTINATION ${BATSNET_LIB_INSTALL_DIR})
