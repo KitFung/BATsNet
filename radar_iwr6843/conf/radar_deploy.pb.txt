@@ -1,0 +1,32 @@
+conf: {
+    base: {
+        controller_identifier: "/_control/radar/iwr6843/parsed/1/lab/test1"
+        identifier: "/radar/iwr6843/parsed/1/lab/test1"
+        device_config_path: "/opt/aiot/conf/radar/radar_device.pb.txt"
+        service_cmd: "/opt/aiot/bin/radar_iwr6843"
+        service_argv: "/opt/aiot/conf/radar/radar_device.pb.txt"
+    }
+    model: IWR6843
+    possible_mode: {
+        key: "INDOOR"
+        value: "/opt/aiot/conf/radar/conf/a.cfg"
+    }
+    possible_mode {
+        key: "OUTDOOR"
+        value: "/opt/aiot/conf/radar/conf/a.cfg"
+    }
+}
+
+state: {
+    base: {
+        mode: SHARING
+        # mode: LOCAL_SAVING
+    }
+    current_mode: "INDOOR"
+}
+
+read_parsed: true
+
+# This below two parameter is useless right now
+data_collecter_ip: "192.168.100.3"
+data_collecter_port: 1883

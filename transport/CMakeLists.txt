@@ -44,3 +44,5 @@ add_executable(block_message_test src/block_message_test.cc proto/simple.pb.cc)
 target_link_libraries(block_message_test transport ${Protobuf_LIBRARIES} service_discovery service_node)
 
 add_subdirectory(binding/python)
+
+# install(TARGETS service_discovery DESTINATION ${BATSNET_LIB_INSTALL_DIR})

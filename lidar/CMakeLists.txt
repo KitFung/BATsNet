@@ -43,3 +43,11 @@ target_link_libraries(lidar_control_lib device lidar_proto)
 
 add_executable(lidar_controller src/controller.cc)
 target_link_libraries(lidar_controller lidar_control_lib service_node)
+
+set(LIDAR_CONF_INSTALL_DIR ${BATSNET_CONF_INSTALL_DIR}/lidar)
+install(DIRECTORY DESTINATION ${LIDAR_CONF_INSTALL_DIR})
+install(DIRECTORY conf/ DESTINATION ${LIDAR_CONF_INSTALL_DIR})
+
+install(TARGETS rslidar DESTINATION ${BATSNET_BIN_INSTALL_DIR})
+install(TARGETS velodyne DESTINATION ${BATSNET_BIN_INSTALL_DIR})
+install(TARGETS lidar_controller DESTINATION ${BATSNET_BIN_INSTALL_DIR})

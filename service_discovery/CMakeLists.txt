@@ -23,3 +23,5 @@ add_executable(test_node src/test_node.cc)
 target_link_libraries(test_node service_node)
 
 add_subdirectory(binding)
+
+install(TARGETS service_discovery DESTINATION ${BATSNET_LIB_INSTALL_DIR})

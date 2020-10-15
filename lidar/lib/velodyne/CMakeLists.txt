@@ -13,6 +13,7 @@ find_package(Protobuf REQUIRED)
 
 # include_directories(${Protobuf_INCLUDE_DIRS})
 
+
 EXEC_PROGRAM(protoc 
   ARGS -I=${CMAKE_CURRENT_SOURCE_DIR}/proto
        --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto

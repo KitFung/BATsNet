@@ -28,8 +28,3 @@ target_include_directories(rslidar_proto PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CM
 add_library(rslidar_lib STATIC src/input.cc src/rsdriver.cpp)
 target_link_libraries(rslidar_lib rslidar_proto ${Boost_LIBRARIES})
 target_include_directories(rslidar_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/proto ${CMAKE_CURRENT_SOURCE_DIR}/src)
-
-# install(DIRECTORY DESTINATION /opt/aiot/drivers/bin)
-# install(DIRECTORY conf/ DESTINATION /opt/aiot/drivers/conf/rslidar)
-# install(TARGETS rslidar DESTINATION /opt/aiot/drivers/bin)
-# install(FILES systemd/rslidar.service DESTINATION /etc/systemd/system)

@@ -26,11 +26,14 @@ target_include_directories(data_collector
     ${CMAKE_CURRENT_SOURCE_DIR}
   )
 
-add_library(data_upload_mission_lib STATIC src/data_upload_mission.cc)
-target_link_libraries(data_upload_mission_lib data_collector mission_lib)
+## The below two target just skip now since the current scenario only need cron job + scp upload
+## Don't need this prowerful feature
 
-add_executable(data_upload_mission src/data_upload_mission_app.cc)
-target_link_libraries(data_upload_mission data_upload_mission_lib ${Protobuf_LIBRARIES})
+# add_library(data_upload_mission_lib STATIC src/data_upload_mission.cc)
+# target_link_libraries(data_upload_mission_lib data_collector mission_lib)
+
+# add_executable(data_upload_mission src/data_upload_mission_app.cc)
+# target_link_libraries(data_upload_mission data_upload_mission_lib ${Protobuf_LIBRARIES})
 
 
-install(TARGETS data_collector DESTINATION /usr/local/lib)
+install(TARGETS data_collector DESTINATION ${BATSNET_LIB_INSTALL_DIR})

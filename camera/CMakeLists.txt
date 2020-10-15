@@ -40,3 +40,11 @@ target_link_libraries(camera_control_lib camera_proto device grpc++ grpc++_refle
 
 add_executable(camera_controller src/controller.cc)
 target_link_libraries(camera_controller camera_control_lib service_node)
+
+set(CAMERA_CONF_INSTALL_DIR ${BATSNET_CONF_INSTALL_DIR}/camera)
+install(DIRECTORY DESTINATION ${CAMERA_CONF_INSTALL_DIR})
+install(DIRECTORY conf/ DESTINATION ${CAMERA_CONF_INSTALL_DIR})
+install(TARGETS camera DESTINATION ${BATSNET_BIN_INSTALL_DIR})
+install(TARGETS camera_controller DESTINATION ${BATSNET_BIN_INSTALL_DIR})
+
+# install(FILES systemd/radar.service DESTINATION /etc/systemd/system)

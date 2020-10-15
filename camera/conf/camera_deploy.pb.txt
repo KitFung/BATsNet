@@ -1,0 +1,22 @@
+conf: {
+    base: {
+        controller_identifier: "/_control/thermal/trafi_one_195/stream/1/lab/test1"
+        identifier: "/thermal/trafi_one_195/stream/1/lab/test1"
+        device_config_path: "/opt/aiot/conf/camera/thermal_trafi_one_195_device.pb.txt"
+        service_cmd: "/opt/aiot/bin/camera"
+        service_argv: "/opt/aiot/conf/camera/thermal_trafi_one_195_device.pb.txt"
+    }
+    model: TRAFI_ONE_195
+}
+
+state: {
+    base: {
+        mode: SHARING
+        # mode: LOCAL_SAVING
+    }
+    frame_rate: 30
+    max_bitrate: 20
+}
+
+stream_path: "rtsp://10.42.0.4/?video=1"
+output_stream_path: "rtsp://10.42.0.100:8554/mystream"
