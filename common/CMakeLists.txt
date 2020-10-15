@@ -19,6 +19,7 @@ file(GLOB PROTO_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.cc)
 include_directories(proto/)
 
 add_library(common SHARED ${PROTO_SRC_FILES})
+set_target_properties(common PROPERTIES VERSION ${PROJECT_VERSION})
 target_link_libraries(common ${Protobuf_LIBRARIES})
 target_include_directories(common PUBLIC proto/)
 
