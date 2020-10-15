@@ -29,7 +29,7 @@ if(IN_FOG)
     add_subdirectory(camera)
     add_subdirectory(lidar)
 
-    add_subdirectory(fog_size)
+    add_subdirectory(fog_site)
 elseif(IN_BAT)
     add_subdirectory(bat_side)
 else()

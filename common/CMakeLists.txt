@@ -21,3 +21,5 @@ include_directories(proto/)
 add_library(common SHARED ${PROTO_SRC_FILES})
 target_link_libraries(common ${Protobuf_LIBRARIES})
 target_include_directories(common PUBLIC proto/)
+
+install(TARGETS common DESTINATION ${BATSNET_LIB_INSTALL_DIR})

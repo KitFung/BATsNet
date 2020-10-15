@@ -24,4 +24,5 @@ target_link_libraries(test_node service_node)
 
 add_subdirectory(binding)
 
+install(TARGETS service_node DESTINATION ${BATSNET_LIB_INSTALL_DIR})
 install(TARGETS service_discovery DESTINATION ${BATSNET_LIB_INSTALL_DIR})
