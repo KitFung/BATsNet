@@ -1,3 +1,5 @@
+docker rm -f rss
+
 docker run -d \
     --restart always \
     --network=host \

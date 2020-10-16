@@ -1,0 +1,14 @@
+[Unit]
+Description=The service to maintain vpn to server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/aiot/env
+ExecStart=/opt/aiot/vpn_service/vpn_tunnel.sh
+Restart=always
+RestartSec=1
+User=root
+
+[Install]
+WantedBy=multi-user.target

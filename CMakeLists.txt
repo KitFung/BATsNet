@@ -6,11 +6,12 @@ set(GLOBAL_HEADER ${CMAKE_CURRENT_SOURCE_DIR})
 
 option(IN_FOG "Enable compile the driver in fog" OFF) #OFF by default
 option(IN_BAT "Install for BATs" OFF) #OFF by default
+option(INSTALL_BASE_DIR "" /opt/aiot) #OFF by default
 if(IN_FOG)
 
     set(BATSNET_LIB_INSTALL_DIR /usr/local/lib/batsnet)
-    set(BATSNET_BIN_INSTALL_DIR /opt/aiot/bin)
-    set(BATSNET_CONF_INSTALL_DIR /opt/aiot/conf)
+    set(BATSNET_BIN_INSTALL_DIR ${INSTALL_BASE_DIR}/bin)
+    set(BATSNET_CONF_INSTALL_DIR ${INSTALL_BASE_DIR}/conf)
     install(DIRECTORY DESTINATION ${BATSNET_LIB_INSTALL_DIR})
     install(DIRECTORY DESTINATION ${BATSNET_BIN_INSTALL_DIR})
     install(DIRECTORY DESTINATION ${BATSNET_CONF_INSTALL_DIR})
