@@ -47,4 +47,4 @@ install(DIRECTORY conf/ DESTINATION ${CAMERA_CONF_INSTALL_DIR})
 install(TARGETS camera DESTINATION ${BATSNET_BIN_INSTALL_DIR})
 install(TARGETS camera_controller DESTINATION ${BATSNET_BIN_INSTALL_DIR})
 
-# install(FILES systemd/radar.service DESTINATION /etc/systemd/system)
+install(FILES systemd/camera.service DESTINATION /etc/systemd/system)

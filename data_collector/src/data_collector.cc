@@ -30,7 +30,7 @@ bool DataCollector::SendData(const char *topic, const char *data,
     int ret = publish(NULL, topic, len, data, params_.qos, false);
     return (ret == MOSQ_ERR_SUCCESS);
   } else {
-    if (buf_cnt_[topic] % 100 == 0) {
+    if (buf_cnt_[topic] % 1000 == 0) {
       writer_[topic].reset(new BufWriter(topic));
       buf_cnt_[topic] = 0;
       std::cout << "Reset BufWriter" << std::endl;

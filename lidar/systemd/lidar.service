@@ -1,12 +1,12 @@
 [Unit]
-Description=The service of camera sensor
+Description=The service of lidar sensor
 After=network.target
 
 [Service]
 EnvironmentFile=/etc/profile.d/fog_env.sh
 Type=simple
 WorkingDirectory=/opt/aiot
-ExecStart=/opt/aiot/bin/camera_controller /opt/aiot/conf/camera/camera_deploy.pb.txt
+ExecStart=/opt/aiot/bin/lidar_controller /opt/aiot/conf/lidar/lidar_deploy.pb.txt
 Restart=always
 RestartSec=1
 User=nvidia

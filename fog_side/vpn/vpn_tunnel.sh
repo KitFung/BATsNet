@@ -1,9 +1,6 @@
 #!/bin/bash
 source /etc/profile.d/fog_env.sh
 
-VPN_USER=''
-VPN_PASSWORD=''
-
 OPENCONNECT_PID=""
 function checkOpenconnect(){
     ps -p "${OPENCONNECT_PID}" | tail -n +2
@@ -25,7 +22,7 @@ do
     # sleep a bit of time
     sleep $TIME_INTERVAL
     OPENCONNECT_STATUS=$(checkOpenconnect)
-    if [ ! -n "$OPENCONNECT_STATUS"]
+    if [ ! -n "$OPENCONNECT_STATUS" ]
     then
         pkill openconnect
         startOpenConnect
