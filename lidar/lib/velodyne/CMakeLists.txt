@@ -26,3 +26,5 @@ target_include_directories(velodyne_proto PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${C
 
 add_subdirectory(velodyne_driver)
 add_subdirectory(velodyne_pointcloud)
+
+install(TARGETS velodyne_proto DESTINATION ${BATSNET_LIB_INSTALL_DIR})

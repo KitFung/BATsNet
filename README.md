@@ -72,6 +72,6 @@ popd
 - openssl (libssl-dev)
 - lz4 (liblz4-dev)
 - pybind11 (install via conda or build from source)
-- python3 (recommend 3.8)
+- python3.8
 - grpc https://grpc.io/docs/languages/cpp/quickstart/
 - etcd-cpp https://github.com/nokia/etcd-cpp-apiv3

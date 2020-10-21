@@ -10,7 +10,7 @@
 
 namespace py = pybind11;
 
-constexpr int kMaxPoint = 100000;
+constexpr int kMaxPoint = 20000;
 
 class VelodyneCloudReader {
 public:

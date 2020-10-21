@@ -17,7 +17,8 @@ setuptools.setup(
         'transport_py.cpython-38-x86_64-linux-gnu.so'
     ]},
     install_requires=[
-        "grpcio"
+        "grpcio",
+        "numpy"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
