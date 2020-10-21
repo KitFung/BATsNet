@@ -1,4 +1,5 @@
 import lamppost.transport_py as transport_py
+import lamppost.velodyne_py as velodyne_py
 import lamppost.service_discovery_py as service_discovery_py
 
 class DataReader(object):

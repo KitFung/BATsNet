@@ -56,11 +56,14 @@ class Transform {
 public:
   Transform(const velodyne::VelodynePointCloudConf &conf);
   ~Transform() {}
+  void processScan(const velodyne::VelodyneScan &scanMsg,
+                   bool publish_cloud = true);
   void Start();
+  inline const velodyne::PointCloud &cloud() {
+    return container_ptr->finishCloud();
+  }
 
 private:
-  void processScan(const velodyne::VelodyneScan &scanMsg);
-
   std::shared_ptr<velodyne_rawdata::RawData> data_;
   std::shared_ptr<transport::IPC<velodyne::VelodyneScan>> velodyne_scan_;
   std::shared_ptr<transport::IPC<velodyne::PointCloud>> output_;

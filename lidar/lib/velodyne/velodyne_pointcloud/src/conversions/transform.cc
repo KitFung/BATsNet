@@ -57,7 +57,8 @@ Transform::Transform(const velodyne::VelodynePointCloudConf &conf)
  *  @pre TF message filter has already waited until the transform to
  *       the configured @c frame_id can succeed.
  */
-void Transform::processScan(const velodyne::VelodyneScan &scanMsg) {
+void Transform::processScan(const velodyne::VelodyneScan &scanMsg,
+                            bool publish_cloud) {
   // if (output_.getNumSubscribers() == 0) // no one listening?
   //   return;                             // avoid much work
 
@@ -71,9 +72,11 @@ void Transform::processScan(const velodyne::VelodyneScan &scanMsg) {
     data_->unpack(scanMsg.packets(i), *container_ptr, scanMsg.stamp());
   }
   // publish the accumulated cloud message
-  output_->Send(container_ptr->finishCloud());
-  // std::cout << "point size: " << container_ptr->finishCloud().point_size()
-  //           << std::endl;
+  if (publish_cloud) {
+    output_->Send(container_ptr->finishCloud());
+    // std::cout << "point size: " << container_ptr->finishCloud().point_size()
+    //           << std::endl;
+  }
 }
 
 void Transform::Start() {

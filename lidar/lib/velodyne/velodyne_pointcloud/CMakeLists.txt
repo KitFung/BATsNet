@@ -35,3 +35,4 @@ include_directories(include ${catkin_INCLUDE_DIRS}
 
 add_subdirectory(src/lib)
 add_subdirectory(src/conversions)
+add_subdirectory(binding)

@@ -20,7 +20,7 @@ EXEC_PROGRAM(protoc
        --python_out=${CMAKE_CURRENT_SOURCE_DIR}/proto
        ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto)
 
-add_library(velodyne_proto STATIC proto/velodyne.pb.cc)
+add_library(velodyne_proto SHARED proto/velodyne.pb.cc)
 target_link_libraries(velodyne_proto PUBLIC ${Protobuf_LIBRARIES})
 target_include_directories(velodyne_proto PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/proto)
 

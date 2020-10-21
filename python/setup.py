@@ -16,6 +16,9 @@ setuptools.setup(
         'service_discovery_py.cpython-38-x86_64-linux-gnu.so',
         'transport_py.cpython-38-x86_64-linux-gnu.so'
     ]},
+    install_requires=[
+        "grpcio"
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

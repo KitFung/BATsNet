@@ -5,6 +5,7 @@ import "common.proto";
 package radar;
 
 service Controller {
+  rpc GetInitDeviceConf(common.Empty) returns (DeviceConf) {}
   rpc GetConf(common.Empty) returns (ControllerConf) {}
   rpc GetState(common.Empty) returns (ControllerMutableState) {}
   rpc SetState(ControllerMutableState) returns (SetStateResponse) {}

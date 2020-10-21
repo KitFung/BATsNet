@@ -49,7 +49,11 @@ public:
     std::lock_guard<std::mutex> lock(deamon_->GetLock());
     deamon_->StartDevice();
   }
-
+  Status GetInitDeviceConf(ServerContext *context, const common::Empty *request,
+                           DConfT *reply) override {
+    reply->CopyFrom(device_conf_);
+    return Status::OK;
+  }
   // API
   Status GetConf(ServerContext *context, const common::Empty *request,
                  ConfT *reply) override {
