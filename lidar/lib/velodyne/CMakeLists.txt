@@ -20,11 +20,13 @@ EXEC_PROGRAM(protoc
        --python_out=${CMAKE_CURRENT_SOURCE_DIR}/proto
        ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto)
 
-add_library(velodyne_proto SHARED proto/velodyne.pb.cc)
-target_link_libraries(velodyne_proto PUBLIC ${Protobuf_LIBRARIES})
-target_include_directories(velodyne_proto PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/proto)
+if(INSTALL_DRIVER)
+  add_library(velodyne_proto SHARED proto/velodyne.pb.cc)
+  target_link_libraries(velodyne_proto PUBLIC ${Protobuf_LIBRARIES})
+  target_include_directories(velodyne_proto PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/proto)
 
-add_subdirectory(velodyne_driver)
-add_subdirectory(velodyne_pointcloud)
+  add_subdirectory(velodyne_driver)
+  add_subdirectory(velodyne_pointcloud)
 
-install(TARGETS velodyne_proto DESTINATION ${BATSNET_LIB_INSTALL_DIR})
+  install(TARGETS velodyne_proto DESTINATION ${BATSNET_LIB_INSTALL_DIR})
+endif(INSTALL_DRIVER)

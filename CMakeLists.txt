@@ -6,6 +6,9 @@ set(GLOBAL_HEADER ${CMAKE_CURRENT_SOURCE_DIR})
 
 option(IN_FOG "Enable compile the driver in fog" OFF) #OFF by default
 option(IN_BAT "Install for BATs" OFF) #OFF by default
+option(INSTALL_DRIVER "Install the driver" ON) #OFF by default
+option(IN_DOCKER "Install the driver" OFF) #OFF by default
+
 set(INSTALL_BASE_DIR /opt/aiot)
 if(IN_FOG)
     set(BATSNET_LIB_INSTALL_DIR /usr/local/lib/batsnet)
@@ -32,7 +35,10 @@ if(IN_FOG)
     add_subdirectory(camera)
     add_subdirectory(lidar)
 
-    add_subdirectory(fog_side)
+    if(NOT IN_DOCKER)
+        add_subdirectory(fog_side)
+    endif(IN_DOCKER)
+
 elseif(IN_BAT)
     add_subdirectory(bat_side)
 else()

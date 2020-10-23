@@ -1,0 +1,51 @@
+
+# https://rickhw.github.io/2019/03/17/Container/Install-K8s-with-Kubeadm/
+kubeadm init --apiserver-advertise-address=137.189.97.26 \
+ --pod-network-cidr=10.244.0.0/16
+
+mkdir -p $HOME/.kube
+sudo cp -f /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+# kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
+kubeadm join 137.189.97.26:6443 --token ncznyw.xafjdkndvkhlsg6t \
+    --discovery-token-ca-cert-hash sha256:8f98d1747041c75706f0a3af3bce172f048d166b1a94ac7c8bd62315910f5d95 
+
+kubectl taint nodes --all node-role.kubernetes.io/master-
+
+kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.1/aio/deploy/alternative.yaml
+
+# https://137.189.97.26:6443/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/#!/login
+
+# create user
+cat <<EOF | kubectl create -f -
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: kubernetes-dashboard
+EOF
+
+cat <<EOF | kubectl create -f -
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: admin-user
+  namespace: kubernetes-dashboard
+EOF
+
+kubectl get secret -n kubernetes-dashboard | grep admin-user
+
+kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}')
+
+eyJhbGciOiJSUzI1NiIsImtpZCI6IktmTnFYVXNiamZObUgwT3ZiZ2dtcXp3X1A5TUotYll4ZGtOdEU3aEI4VkEifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlcm5ldGVzLWRhc2hib2FyZCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJhZG1pbi11c2VyLXRva2VuLTZubmpjIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQubmFtZSI6ImFkbWluLXVzZXIiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiJkNTM1YjQwZC00MDJlLTRjZWYtOGE0OC02ODU0YjVlYjZiOWMiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6a3ViZXJuZXRlcy1kYXNoYm9hcmQ6YWRtaW4tdXNlciJ9.hm4c7tbzH2iVeSvmzfzx-yKW0YCBfsXJNyUz-EjsXPILVv0mXoGHVnyOXde4Kd46tcZaJ05TIX296S648XLWbl9TyrUDTsRBE1mRwR0ibs21gO2R0gHA8Vxd8bn7PvYkXHmVpVekfRbnRjHgtVuzm2ln_EX6eXrHgv_Mk6RomB53qI4f6yUo1hUNFkUQtayEEAAplr2pu5MPfUMTAO4-Ib2x7HGLMoRu8RIH1-GluuZ2eqJe-iqfgOASMgdjrd5zOu9r8IFpS7VjF-ZvTZiJaELqguRSP_n6U-1FGEuFcVQnRzv7XpMnbq1H163RV4ltmo9SXWkoxKCaqHR6-FhhNQ
+
+# https://blogs.windriver.com/wind_river_blog/2020/06/nvidia-k8s-device-plugin-for-wind-river-linux/

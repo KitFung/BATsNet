@@ -21,10 +21,12 @@ EXEC_PROGRAM(protoc
        --python_out=${CMAKE_CURRENT_SOURCE_DIR}/proto
        ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto)
 
-add_library(rslidar_proto STATIC proto/rslidar.pb.cc)
-target_link_libraries(rslidar_proto ${Protobuf_LIBRARIES})
-target_include_directories(rslidar_proto PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/proto)
-       
-add_library(rslidar_lib STATIC src/input.cc src/rsdriver.cpp)
-target_link_libraries(rslidar_lib rslidar_proto ${Boost_LIBRARIES})
-target_include_directories(rslidar_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/proto ${CMAKE_CURRENT_SOURCE_DIR}/src)
+if(INSTALL_DRIVER)
+  add_library(rslidar_proto STATIC proto/rslidar.pb.cc)
+  target_link_libraries(rslidar_proto ${Protobuf_LIBRARIES})
+  target_include_directories(rslidar_proto PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/proto)
+        
+  add_library(rslidar_lib STATIC src/input.cc src/rsdriver.cpp)
+  target_link_libraries(rslidar_lib rslidar_proto ${Boost_LIBRARIES})
+  target_include_directories(rslidar_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/proto ${CMAKE_CURRENT_SOURCE_DIR}/src)
+endif(INSTALL_DRIVER)
