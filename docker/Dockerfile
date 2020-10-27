@@ -13,6 +13,9 @@ RUN bash /opt/install_pybind.sh
 COPY docker/deps/install_cmake.sh /opt
 RUN bash /opt/install_cmake.sh
 
+COPY docker/deps/install_protobuf.sh /opt
+RUN bash /opt/install_protobuf.sh
+
 COPY docker/deps/install_grpc.sh /opt
 RUN bash /opt/install_grpc.sh
 

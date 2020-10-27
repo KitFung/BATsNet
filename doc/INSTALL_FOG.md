@@ -118,6 +118,8 @@ source /etc/profile.d/fog_env.sh
 
 ## Step 11: Start the service for the sensor
 
+Need to install the newest openconnect
+The apt provided version is too old. Need compile from source
 ```
 ## First check whether the vpn work regularly
 sudo service vpn_tunnel start

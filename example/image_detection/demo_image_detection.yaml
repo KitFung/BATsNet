@@ -7,12 +7,10 @@ spec:
   hostNetwork: true
   containers:
   - name: detection
-    image: polinux/stress
+    image: 
     resources:
       limits:
-        memory: "200Mi"
+        memory: "5000Mi"
         nvidia.com/gpu: 1
-    requests:
-        memory: "100Mi"
     command: ["python3"]
     args: ["/opt/main.py"]
