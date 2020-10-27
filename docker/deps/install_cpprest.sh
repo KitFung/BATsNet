@@ -8,3 +8,4 @@ ninja
 ninja install
 popd
 popd
+rm -rf casablanca

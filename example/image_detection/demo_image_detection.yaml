@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: demo_image_detection
+  namespace: demo
+spec:
+  hostNetwork: true
+  containers:
+  - name: detection
+    image: polinux/stress
+    resources:
+      limits:
+        memory: "200Mi"
+        nvidia.com/gpu: 1
+    requests:
+        memory: "100Mi"
+    command: ["python3"]
+    args: ["/opt/main.py"]

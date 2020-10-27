@@ -37,7 +37,7 @@ if(IN_FOG)
 
     if(NOT IN_DOCKER)
         add_subdirectory(fog_side)
-    endif(IN_DOCKER)
+    endif(NOT IN_DOCKER)
 
 elseif(IN_BAT)
     add_subdirectory(bat_side)
