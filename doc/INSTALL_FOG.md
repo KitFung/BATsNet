@@ -20,7 +20,7 @@ sudo apt update && sudo apt install -y libmosquitto-dev \
     libmosquittopp-dev libssl-dev liblz4-dev \
     build-essential pkg-config \
     cmake autoconf automake libtool curl make g++ unzip \
-    python3.8-dev libboost-all-dev libyaml-cpp-dev libpcap-dev
+    python3.6-dev libboost-all-dev libyaml-cpp-dev libpcap-dev
 
 # protobuf
 curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v3.12.3/protobuf-all-3.12.3.tar.gz

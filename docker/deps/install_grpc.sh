@@ -16,6 +16,7 @@ cmake -DgRPC_INSTALL=ON \
     ../.. 
 make -j8
 make install
+# make install prefix=/usr/lib/aarch64-linux-gnu
 popd
 popd
 rm -rf grpc/

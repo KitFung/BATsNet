@@ -10,7 +10,7 @@ sudo apt update && sudo apt install -y libmosquitto-dev \
     libmosquittopp-dev libssl-dev liblz4-dev \
     build-essential pkg-config \
     cmake autoconf automake libtool curl make g++ unzip \
-    python3.8-dev libboost-all-dev libyaml-cpp-dev libpcap-dev
+    python3.6-dev libboost-all-dev libyaml-cpp-dev libpcap-dev
 
 # protobuf
 curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v3.12.3/protobuf-all-3.12.3.tar.gz
@@ -72,6 +72,6 @@ popd
 - openssl (libssl-dev)
 - lz4 (liblz4-dev)
 - pybind11 (install via conda or build from source)
-- python3.8
+- python3.6
 - grpc https://grpc.io/docs/languages/cpp/quickstart/
 - etcd-cpp https://github.com/nokia/etcd-cpp-apiv3

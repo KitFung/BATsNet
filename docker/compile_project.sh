@@ -1,7 +1,16 @@
-# cd /opt/BATsNET
+# Make sure add the dependency is setup
+rm /usr/lib/aarch64-linux-gnu/libprotobuf*
+ldconfig
 
-# rm -rf build
-# mkdir build
-# cd build
-# cmake -DIN_FOG=ON -DINSTALL_DRIVER=OFF -DIN_DOCKER=ON ..
-# make -j4
+cd /opt/BATsNET
+
+rm -rf build
+mkdir build
+cd build
+cmake -DIN_FOG=ON -DINSTALL_DRIVER=OFF -DIN_DOCKER=ON ..
+make -j4
+make install
+
+cd ../python
+bash prepare.sh
+pip3 install .

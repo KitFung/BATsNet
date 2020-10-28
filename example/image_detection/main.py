@@ -3,6 +3,7 @@ import torch
 import torchvision
 from lamppost import reader
 
+# https://juejin.im/post/6865120736982335501
 model = torchvision.models.detection.fasterrcnn_resnet50_fpn(
     pretrained=True)
 
