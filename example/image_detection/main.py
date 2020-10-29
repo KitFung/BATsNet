@@ -21,7 +21,7 @@ model = torchvision.models.detection.fasterrcnn_resnet50_fpn(
 # For inference
 model.eval()
 
-video_path = reader.VideoStream("/123")
+video_path = reader.VideoStream("/thermal/trafi_one_195/stream/1/lab/test1")
 vid = cv2.VideoCapture(video_path)
 vid.open()
 while True:

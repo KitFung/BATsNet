@@ -1,0 +1,2 @@
+from kitfung/batsnet:latest
+

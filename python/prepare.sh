@@ -3,6 +3,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $DIR/..
 
+rm ./python/lamppost/*.so
 # Collect The Core file
 find -name *_pb2_grpc.py -not -path "./python/*" | xargs -i cp -rf {} ./python/lamppost
 find -name *_pb2.py  -not -path "./python/*" | xargs -i cp -rf {} ./python/lamppost

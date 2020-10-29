@@ -6,6 +6,15 @@ https://yanwei-liu.medium.com/nvidia-jetson-tx2%E5%AD%B8%E7%BF%92%E7%AD%86%E8%A8
 
 https://docs.docker.com/engine/install/
 
+Add this args to `/etc/docker/daemon.json`
+```
+{
+    "insecure-registries": [
+        "137.189.97.26:5000"
+    ]
+}
+```
+
 ## Step 3: Install Cmake with version >= 3.18.3
 
 https://cmake.org/download/
@@ -49,8 +58,8 @@ pushd grpc/
 git submodule update --init
 mkdir -p cmake/build
 pushd cmake/build
-cmake -DgRPC_INSTALL=ON       -DgRPC_BUILD_TESTS=OFF  -DBUILD_SHARED_LIBS=ON     ../..
-# cmake -DgRPC_INSTALL=ON -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_ZLIB_PROVIDER=package -DgRPC_CARES_PROVIDER=package -DgRPC_SSL_PROVIDER=package -DgRPC_BUILD_TESTS=OFF  -DBUILD_SHARED_LIBS=ON     ../.. 
+# cmake -DgRPC_INSTALL=ON       -DgRPC_BUILD_TESTS=OFF  -DBUILD_SHARED_LIBS=ON     ../..
+cmake -DgRPC_INSTALL=ON -DgRPC_PROTOBUF_PROVIDER=package -DgRPC_ZLIB_PROVIDER=package -DgRPC_CARES_PROVIDER=package -DgRPC_SSL_PROVIDER=package -DgRPC_BUILD_TESTS=OFF  -DBUILD_SHARED_LIBS=ON     ../.. 
 make -j8
 sudo make install
 popd

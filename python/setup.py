@@ -1,4 +1,9 @@
 import setuptools
+import glob
+
+package_data = []
+for so in glob.glob(r'lamppost/*.so'):
+    package_data.append(so.split('/')[-1])
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -12,10 +17,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=['lamppost'],
-    package_data={'lamppost': [
-        'service_discovery_py.cpython-38-x86_64-linux-gnu.so',
-        'transport_py.cpython-38-x86_64-linux-gnu.so'
-    ]},
+    package_data={'lamppost': package_data},
     install_requires=[
         "grpcio",
         "numpy"
