@@ -54,8 +54,10 @@ void Sharing(const camera::DeviceConf &conf) {
       perror(0);
       exit(EXIT_FAILURE);
     }
-    while (true)
-      ;
+    while (true) {
+      std::this_thread::sleep_until(
+          std::chrono::time_point<std::chrono::system_clock>::max());
+    }
   }
   std::string cmd = "ffmpeg -flags low_delay -fflags nobuffer -i ";
   cmd += in_stream;
