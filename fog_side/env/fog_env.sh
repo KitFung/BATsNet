@@ -9,5 +9,7 @@ export VPN_PASSWORD=''
 export BAT_IP=10.0.0.100
 # The nic that connected to the bat
 export BAT_NIC=enp3s0
+export SERVER_NIC=tun0
+export 4G_NIC=eth2
 
 export LD_LIBRARY_PATH=/usr/local/lib/batsnet:$LD_LIBRARY_PATH

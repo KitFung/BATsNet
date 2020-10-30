@@ -1,16 +1,15 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: demo_image_detection
+  name: demo-image-detection
   namespace: demo
 spec:
   hostNetwork: true
+  restartPolicy: OnFailure
   containers:
   - name: detection
-    image: 
+    image: 137.189.97.26:5000/batsnet_image_detect_demo
     resources:
       limits:
-        memory: "5000Mi"
+        memory: "4000Mi"
         nvidia.com/gpu: 1
-    command: ["python3"]
-    args: ["/opt/main.py"]

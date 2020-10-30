@@ -6,4 +6,4 @@ WORKDIR /opt
 
 COPY . /opt/image_detection
 
-ENTRYPOINT [ "python3", "/opt/image_detection/main.py" ]
+ENTRYPOINT [ "bash", "/opt/image_detection/run.sh" ]
