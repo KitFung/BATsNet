@@ -2,6 +2,16 @@
 
 https://yanwei-liu.medium.com/nvidia-jetson-tx2%E5%AD%B8%E7%BF%92%E7%AD%86%E8%A8%98-%E4%B8%80-3dab5640968e
 
+The disk mount: need add `nofail` to it option
+
+Assume already setup the disk, then create file `/etc/init.d/mounta` with content
+```
+#! /bin/sh
+swapoff -a
+sleep 30 && /bin/mount -a
+```
+then chmod +x to that file
+
 ## Step 2: Install the Docker
 
 https://docs.docker.com/engine/install/
