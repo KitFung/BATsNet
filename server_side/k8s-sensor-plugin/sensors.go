@@ -1,23 +1,62 @@
 package main
 
+import (
+	"context"
+	"time"
+
+	"github.com/coreos/etcd/clientv3"
+	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
+)
+
 type Sensor struct {
-	typeId string
+	pluginapi.Device
+	resourceName string
+	fullName     string
 }
 
 type ResourceManager interface {
 	Sensors() []*Sensor
 	CheckHealth(stop <-chan interface{}, sensors []*Sensor, unhealthy chan<- *Sensor)
 }
-type SensorsManager struct{}
+type SensorManager struct {
+	etcdClient *clientv3.Client
+}
 
-// Not getting the detail sensor id, just get it type
-// Example: /camera /lidar
-func (m *SensorsManager) Sensors() []*Sensor {
-	var sensors []*Sensor
-	return sensors
+func NewSensorManager() *SensorManager {
+	cli, _ := clientv3.New(clientv3.Config{
+		Endpoints:   []string{"localhost:2379"},
+		DialTimeout: 5 * time.Second,
+	})
+	return &SensorManager{
+		etcdClient: cli,
+	}
+}
+
+func buildSensor(resourceName string, fullName string) *Sensor {
+	sensor := &Sensor{
+		resourceName: resourceName,
+		fullName:     fullName,
+	}
+	sensor.ID = fullName
+	sensor.Health = pluginapi.Healthy
+	return sensor
 }
 
 // Later setup etcd in fog, and let it register to fog
-func (m *SensorsManager) CheckHealth(stop <-chan interface{}, sensors []*Sensor, unhealthy chan<- *Sensor) {
-
+func (m *SensorManager) CheckHealth(stop <-chan interface{}, sensors []*Sensor, unhealthy chan<- *Sensor) {
+	for {
+		select {
+		case <-stop:
+			return
+		default:
+		}
+		for _, s := range sensors {
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+			_, err := m.etcdClient.Get(ctx, s.fullName)
+			cancel()
+			if err != nil {
+				unhealthy <- s
+			}
+		}
+	}
 }

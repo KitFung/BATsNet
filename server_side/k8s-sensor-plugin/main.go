@@ -35,24 +35,20 @@ func main() {
 	log.Println("Starting OS watcher.")
 	sigs := newOSWatcher(syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
-	var plugins []*SensorPlugin
+	var plugins *SensorPlugins
 
 restart:
-	for _, p := range plugins {
-		p.Stop()
-	}
+	plugins.Stop()
 
 	log.Println("Retreiving plugins.")
-	plugins = GetPlugins()
+	plugins = NewSensorPlugins()
 
-	for _, p := range plugins {
-		if err := p.Start(); err != nil {
-			log.SetOutput(os.Stderr)
-			log.Println("Could not contact Kubelet, retrying. Did you enable the device plugin feature gate?")
-			log.Printf("You can check the prerequisites at: https://github.com/NVIDIA/k8s-device-plugin#prerequisites")
-			log.Printf("You can learn how to set the runtime at: https://github.com/NVIDIA/k8s-device-plugin#quick-start")
-			goto restart
-		}
+	if err := plugins.Start(); err != nil {
+		log.SetOutput(os.Stderr)
+		log.Println("Could not contact Kubelet, retrying. Did you enable the device plugin feature gate?")
+		log.Printf("You can check the prerequisites at: https://github.com/NVIDIA/k8s-device-plugin#prerequisites")
+		log.Printf("You can learn how to set the runtime at: https://github.com/NVIDIA/k8s-device-plugin#quick-start")
+		goto restart
 	}
 
 L:

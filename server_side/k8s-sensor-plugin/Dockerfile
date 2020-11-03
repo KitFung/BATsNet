@@ -20,24 +20,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         wget && \
     rm -rf /var/lib/apt/lists/*
 
-ENV GOLANG_VERSION 1.10.3
-RUN wget -nv -O - https://storage.googleapis.com/golang/go${GOLANG_VERSION}.linux-arm64.tar.gz \
+ENV GOLANG_VERSION 1.15.3
+RUN wget -nv -O - https://golang.org/dl/go${GOLANG_VERSION}.linux-arm64.tar.gz \
     | tar -C /usr/local -xz
 ENV GOPATH /go
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 
-# WORKDIR /go/src/nvidia-device-plugin
-# COPY . .
+WORKDIR /go/src/k8s-sensor-plugin
+COPY . .
 
-# RUN export CGO_LDFLAGS_ALLOW='-Wl,--unresolved-symbols=ignore-in-object-files' && \
-#     go install -ldflags="-s -w" -v nvidia-device-plugin
+RUN export CGO_LDFLAGS_ALLOW='-Wl,--unresolved-symbols=ignore-in-object-files' && \
+    go install -ldflags="-s -w" -v .
 
 
-# FROM --platform=arm64 debian:stretch-slim
+FROM --platform=arm64 debian:stretch-slim
 
-# ENV NVIDIA_VISIBLE_DEVICES=all
-# ENV NVIDIA_DRIVER_CAPABILITIES=utility
+COPY --from=build /go/bin/k8s-sensor-plugin /usr/bin/k8s-sensor-plugin
 
-# COPY --from=build /go/bin/nvidia-device-plugin /usr/bin/nvidia-device-plugin
-
-# CMD ["nvidia-device-plugin"]
+ENTRYPOINT ["k8s-sensor-plugin"]
