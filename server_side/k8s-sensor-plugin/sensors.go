@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"os"
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
@@ -24,7 +25,7 @@ type SensorManager struct {
 
 func NewSensorManager() *SensorManager {
 	cli, _ := clientv3.New(clientv3.Config{
-		Endpoints:   []string{"localhost:2379"},
+		Endpoints:   []string{os.Getenv("NODE_IP") + ":2379"},
 		DialTimeout: 5 * time.Second,
 	})
 	return &SensorManager{

@@ -38,7 +38,9 @@ func main() {
 	var plugins *SensorPlugins
 
 restart:
-	plugins.Stop()
+	if plugins != nil {
+		plugins.Stop()
+	}
 
 	log.Println("Retreiving plugins.")
 	plugins = NewSensorPlugins()
@@ -50,6 +52,7 @@ restart:
 		log.Printf("You can learn how to set the runtime at: https://github.com/NVIDIA/k8s-device-plugin#quick-start")
 		goto restart
 	}
+	log.Println("Started plugins.")
 
 L:
 	for {

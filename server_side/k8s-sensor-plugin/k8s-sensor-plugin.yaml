@@ -58,6 +58,11 @@ spec:
         volumeMounts:
           - name: device-plugin
             mountPath: /var/lib/kubelet/device-plugins
+        env:
+        - name: NODE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
       volumes:
         - name: device-plugin
           hostPath:

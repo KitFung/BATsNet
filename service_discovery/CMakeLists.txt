@@ -1,5 +1,5 @@
 cmake_minimum_required( VERSION 3.9 )
-project(service_discovery VERSION 0.0.1 LANGUAGES C CXX)
+project(service_discovery VERSION 0.0.2 LANGUAGES C CXX)
 
 find_package(Protobuf REQUIRED)
 

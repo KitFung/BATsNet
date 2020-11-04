@@ -44,6 +44,7 @@ private:
   std::string val_;
   std::thread inner_loop_;
   std::shared_ptr<etcd::Client> etcd_;
+  std::shared_ptr<etcd::Client> local_etcd_;
   int broker_port_ = 0;
   int local_port_ = 0;
   int loop_interval_s_ = 2;

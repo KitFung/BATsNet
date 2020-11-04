@@ -16,6 +16,7 @@ ServiceNode::ServiceNode(const std::string &identifier, const int remote_port,
     : identifier_(identifier), broker_port_(remote_port),
       local_port_(local_port) {
   etcd_ = std::make_shared<etcd::Client>(ketcd_src);
+  local_etcd_ = std::make_shared<etcd::Client>(klocal_etcd_src);
   std::cout << "[ServiceNode] Connected to etcd: " << ketcd_src << std::endl;
   if (broker_port_ == 0) {
     val_ = RetreiveBrokerIP() + ":" + std::to_string(RetreiveEnvPort());
@@ -33,6 +34,8 @@ ServiceNode::ServiceNode(const std::string &identifier, const int remote_port,
 ServiceNode::ServiceNode(const std::string &identifier, const std::string &path)
     : identifier_(identifier) {
   etcd_ = std::make_shared<etcd::Client>(ketcd_src);
+  local_etcd_ = std::make_shared<etcd::Client>(klocal_etcd_src);
+
   std::cout << "[ServiceNode] Connected to etcd: " << ketcd_src << std::endl;
 
   val_ = path;
@@ -118,6 +121,9 @@ int ServiceNode::RetreiveEnvPort() const {
 
 void ServiceNode::Register() {
   auto respond = etcd_->add(identifier_, val_, loop_interval_s_ * 3).get();
+  if (local_etcd_) {
+    local_etcd_->add(identifier_, val_, loop_interval_s_ * 3);
+  }
   std::cout << "[ServiceNode] Registered as: " << identifier_ << " -> "
             << etcd_->get(identifier_).get().value().as_string() << std::endl;
 
@@ -136,6 +142,9 @@ void ServiceNode::Register() {
 
 void ServiceNode::RenewRegister() {
   etcd_->set(identifier_, val_, loop_interval_s_ * 3);
+    if (local_etcd_) {
+    local_etcd_->set(identifier_, val_, loop_interval_s_ * 3);
+  }
 }
 
 void ServiceNode::ValidProxyAlive() {

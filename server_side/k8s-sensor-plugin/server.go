@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"net"
 	"os"
 	"path"
@@ -11,6 +10,7 @@ import (
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 )
@@ -40,7 +40,7 @@ type SensorPlugins struct {
 
 func NewSensorPlugins() *SensorPlugins {
 	cli, _ := clientv3.New(clientv3.Config{
-		Endpoints:   []string{"localhost:2379"},
+		Endpoints:   []string{os.Getenv("NODE_IP") + ":2379"},
 		DialTimeout: 5 * time.Second,
 	})
 	return &SensorPlugins{
@@ -56,6 +56,7 @@ func (m *SensorPlugins) Stop() {
 }
 
 func (m *SensorPlugins) Start() error {
+	log.Printf("Starting %d plugin", len(m.plugins))
 	for _, p := range m.plugins {
 		if err := p.Start(); err != nil {
 			return err
@@ -78,6 +79,7 @@ func GetPlugins(cli *clientv3.Client) []*SensorPlugin {
 	}
 
 	for _, ev := range resp.Kvs {
+		log.Printf("key: %s", string(ev.Key))
 		key := string(ev.Key)
 		eles := strings.Split(key, "/")
 		if len(eles) >= 2 && len(eles[1]) > 0 {
@@ -134,7 +136,10 @@ func (m *SensorPlugin) cleanup() {
 }
 
 func (m *SensorPlugin) Start() error {
+	log.Println("Starting plugin")
+
 	m.initialize()
+	log.Println("Initialize the plugin")
 
 	err := m.Serve()
 	if err != nil {
@@ -251,7 +256,7 @@ func (m *SensorPlugin) GetDevicePluginOptions(context.Context, *pluginapi.Empty)
 
 func (m *SensorPlugin) ListAndWatch(e *pluginapi.Empty, s pluginapi.DevicePlugin_ListAndWatchServer) error {
 	s.Send(&pluginapi.ListAndWatchResponse{Devices: m.apiDevices()})
-
+	log.Printf("ListAndWatch with %d device\n", len(m.apiDevices()))
 	for {
 		select {
 		case <-m.stop:
