@@ -5,6 +5,9 @@ conf: {
         device_config_path: "/home/kit/dev/BATsNet/camera/thermal_trafi_one_195_device.pb.txt"
         service_cmd: "/home/kit/dev/BATsNet/build/camera/camera"
         service_argv: "/home/kit/dev/BATsNet/camera/thermal_trafi_one_195_device.pb.txt"
+        # device_config_path: "/opt/aiot/conf/camera/thermal_trafi_one_195_device.pb.txt"
+        # service_cmd: "/opt/aiot/bin/camera"
+        # service_argv: "/opt/aiot/conf/camera/thermal_trafi_one_195_device.pb.txt"
     }
     model: TRAFI_ONE_195
 }

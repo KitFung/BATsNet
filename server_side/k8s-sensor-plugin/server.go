@@ -6,7 +6,7 @@ import (
 	"net"
 	"os"
 	"path"
-	"strings"
+	"reflect"
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
@@ -22,20 +22,20 @@ const (
 
 type SensorPlugin struct {
 	SensorManager
-	resourceName string
-	fullName     string
-	socket       string
+	resource string
+	socket   string
 
 	plguinServer  *grpc.Server
 	centralServer *grpc.Server
-	cachedSensors []*Sensor
-	health        chan *Sensor
+	cachedSensors map[string]*Sensor
+	update        chan map[string]*Sensor
 	stop          chan interface{}
 }
 
 type SensorPlugins struct {
 	etcdClient *clientv3.Client
-	plugins    []*SensorPlugin
+	plugins    map[string]*SensorPlugin
+	update     chan map[string]map[string]*Sensor
 }
 
 func NewSensorPlugins() *SensorPlugins {
@@ -43,9 +43,80 @@ func NewSensorPlugins() *SensorPlugins {
 		Endpoints:   []string{os.Getenv("NODE_IP") + ":2379"},
 		DialTimeout: 5 * time.Second,
 	})
-	return &SensorPlugins{
+	update := make(chan map[string]map[string]*Sensor)
+	plugins := &SensorPlugins{
 		etcdClient: cli,
 		plugins:    GetPlugins(cli),
+		update:     update,
+	}
+	go func(p *SensorPlugins) {
+		for {
+			gsensors := make(map[string]map[string]*Sensor)
+			sensors, err := GetSensors(p.etcdClient)
+			if err != nil {
+				log.Errorf("Error to get sensors: %v", err)
+				break
+			}
+			for _, s := range sensors {
+				fullName := s.fullName
+				resource := s.resource
+				if gsensors[resource] == nil {
+					gsensors[resource] = make(map[string]*Sensor)
+				}
+				gsensors[resource][fullName] = s
+			}
+			p.update <- gsensors
+			time.Sleep(5 * time.Second)
+		}
+		close(p.update)
+	}(plugins)
+	return plugins
+}
+
+func (m *SensorPlugins) CheckUpdate(sensors map[string]map[string]*Sensor) {
+	added := make(map[string]map[string]*Sensor)
+	updated := make(map[string]map[string]*Sensor)
+	removed := make(map[string]map[string]*Sensor)
+
+	for resource, plugin := range m.plugins {
+		if nsensors, ok := sensors[resource]; ok {
+			if !reflect.DeepEqual(plugin.cachedSensors, nsensors) {
+				updated[resource] = nsensors
+			}
+			delete(sensors, resource)
+		} else {
+			removed[resource] = plugin.cachedSensors
+		}
+	}
+	for resource, sensors := range sensors {
+		added[resource] = sensors
+	}
+
+	for resource, sensors := range added {
+		plugin := NewSensorPlugin(
+			*NewSensorManager(),
+			resource,
+			serverSockPath+"cuhk-"+resource+".sock",
+			sensors)
+
+		err := plugin.Start()
+		if err != nil {
+			log.Panic(err)
+		}
+		m.plugins[resource] = plugin
+		m.plugins[resource].cachedSensors = sensors
+		m.plugins[resource].update <- sensors
+	}
+
+	for resource, sensors := range removed {
+		log.Printf("Remove sensor: %v", sensors)
+		m.plugins[resource].Stop()
+		delete(m.plugins, resource)
+	}
+
+	for resource, sensors := range updated {
+		m.plugins[resource].cachedSensors = sensors
+		m.plugins[resource].update <- sensors
 	}
 }
 
@@ -65,54 +136,34 @@ func (m *SensorPlugins) Start() error {
 	return nil
 }
 
-func GetPlugins(cli *clientv3.Client) []*SensorPlugin {
-	var plugins map[string]*SensorPlugin
+func GetPlugins(cli *clientv3.Client) map[string]*SensorPlugin {
+	var plugins = make(map[string]*SensorPlugin)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	resp, err := cli.Get(ctx, "/_control",
-		clientv3.WithRange(clientv3.GetPrefixRangeEnd("/_control")),
-		clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend))
-	cancel()
-
+	sensors, err := GetSensors(cli)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	for _, ev := range resp.Kvs {
-		log.Printf("key: %s", string(ev.Key))
-		key := string(ev.Key)
-		eles := strings.Split(key, "/")
-		if len(eles) >= 2 && len(eles[1]) > 0 {
-			resource := eles[1]
-			resourceName := resourceNamePrefix + resource
-			fullName := "/" + strings.Join(eles[1:], "/")
-			if val, ok := plugins[resourceName]; ok {
-				val.cachedSensors = append(
-					val.cachedSensors, buildSensor(resourceName, fullName))
-			} else {
-				plugins[resourceName] = NewSensorPlugin(
-					*NewSensorManager(),
-					resourceName,
-					fullName,
-					serverSockPath+"cuhk-"+resource+".sock",
-					[]*Sensor{buildSensor(resourceName, fullName)})
-			}
+	for _, sensor := range sensors {
+		resource := sensor.resource
+		fullName := sensor.fullName
+		if val, ok := plugins[resource]; ok {
+			val.cachedSensors[fullName] = sensor
+		} else {
+			plugins[resource] = NewSensorPlugin(
+				*NewSensorManager(),
+				resource,
+				serverSockPath+"cuhk-"+resource+".sock",
+				map[string]*Sensor{fullName: sensor})
 		}
-		// fmt.Printf("%s : %s\n", ev.Key, ev.Value)
 	}
-
-	pluginsList := make([]*SensorPlugin, 0, len(plugins))
-	for _, plugin := range plugins {
-		pluginsList = append(pluginsList, plugin)
-	}
-	return pluginsList
+	return plugins
 }
 
-func NewSensorPlugin(sensorsManager SensorManager, resourceName string, fullName string, socket string, cachedSensors []*Sensor) *SensorPlugin {
+func NewSensorPlugin(sensorsManager SensorManager, resource string, socket string, cachedSensors map[string]*Sensor) *SensorPlugin {
 	return &SensorPlugin{
 		SensorManager: sensorsManager,
-		resourceName:  resourceName,
-		fullName:      fullName,
+		resource:      resource,
 		socket:        socket,
 		cachedSensors: cachedSensors,
 	}
@@ -122,7 +173,7 @@ func (m *SensorPlugin) initialize() {
 	// m.cachedSensors = m.Devices()
 	m.plguinServer = grpc.NewServer([]grpc.ServerOption{}...)
 	m.centralServer = grpc.NewServer([]grpc.ServerOption{}...)
-	m.health = make(chan *Sensor)
+	m.update = make(chan map[string]*Sensor)
 	m.stop = make(chan interface{})
 }
 
@@ -131,7 +182,7 @@ func (m *SensorPlugin) cleanup() {
 	m.cachedSensors = nil
 	m.plguinServer = nil
 	m.centralServer = nil
-	m.health = nil
+	m.update = nil
 	m.stop = nil
 }
 
@@ -143,21 +194,20 @@ func (m *SensorPlugin) Start() error {
 
 	err := m.Serve()
 	if err != nil {
-		log.Printf("Could not start device plugin for '%s': %s", m.resourceName, err)
+		log.Printf("Could not start device plugin for '%s': %s", m.resource, err)
 		m.cleanup()
 		return err
 	}
 
-	log.Printf("Starting to serve '%s' on %s", m.resourceName, m.socket)
+	log.Printf("Starting to serve '%s' on %s", m.resource, m.socket)
 	err = m.Register()
 	if err != nil {
 		log.Printf("Could not register device plugin: %s", err)
 		m.Stop()
 		return err
 	}
-	log.Printf("Registered device plugin for '%s' with Kubelet", m.resourceName)
+	log.Printf("Registered device plugin for '%s' with Kubelet", m.resource)
 
-	go m.CheckHealth(m.stop, m.cachedSensors, m.health)
 	return nil
 }
 
@@ -165,7 +215,7 @@ func (m *SensorPlugin) Stop() error {
 	if m == nil || m.plguinServer == nil {
 		return nil
 	}
-	log.Printf("Stopping to serve '%s' on %s", m.resourceName, m.socket)
+	log.Printf("Stopping to serve '%s' on %s", m.resource, m.socket)
 	m.plguinServer.Stop()
 	if m.centralServer != nil {
 		m.centralServer.Stop()
@@ -196,16 +246,16 @@ func (m *SensorPlugin) Serve() error {
 		lastCrashTime := time.Now()
 		restartCount := 0
 		for {
-			log.Printf("Starting GRPC server for '%s'", m.resourceName)
+			log.Printf("Starting GRPC server for '%s'", m.resource)
 			err := m.plguinServer.Serve(sock)
 			if err == nil {
 				break
 			}
 
-			log.Printf("GRPC server for '%s' crashed with error: %v", m.resourceName, err)
+			log.Printf("GRPC server for '%s' crashed with error: %v", m.resource, err)
 
 			if restartCount > 5 {
-				log.Fatalf("GRPC server for '%s' has repeatedly crashed recently. Quitting", m.resourceName)
+				log.Fatalf("GRPC server for '%s' has repeatedly crashed recently. Quitting", m.resource)
 			}
 
 			timeSinceLastCrash := time.Since(lastCrashTime).Seconds()
@@ -239,7 +289,7 @@ func (m *SensorPlugin) Register() error {
 	reqt := &pluginapi.RegisterRequest{
 		Version:      pluginapi.Version,
 		Endpoint:     path.Base(m.socket),
-		ResourceName: m.resourceName,
+		ResourceName: ResourceName(m.resource),
 		Options:      &pluginapi.DevicePluginOptions{},
 	}
 
@@ -255,17 +305,16 @@ func (m *SensorPlugin) GetDevicePluginOptions(context.Context, *pluginapi.Empty)
 }
 
 func (m *SensorPlugin) ListAndWatch(e *pluginapi.Empty, s pluginapi.DevicePlugin_ListAndWatchServer) error {
-	s.Send(&pluginapi.ListAndWatchResponse{Devices: m.apiDevices()})
-	log.Printf("ListAndWatch with %d device\n", len(m.apiDevices()))
 	for {
 		select {
 		case <-m.stop:
 			return nil
-		case d := <-m.health:
+		case d := <-m.update:
 			// FIXME: there is no way to recover from the Unhealthy state.
-			d.Health = pluginapi.Unhealthy
-			log.Printf("'%s' device marked unhealthy: %s", m.resourceName, d.ID)
-			s.Send(&pluginapi.ListAndWatchResponse{Devices: m.apiDevices()})
+			// d.Health = pluginapi.Unhealthy
+			devices := m.apiDevices(d)
+			log.Printf("ListAndWatch with %d device\n", len(devices))
+			s.Send(&pluginapi.ListAndWatchResponse{Devices: devices})
 		}
 	}
 }
@@ -275,7 +324,7 @@ func (m *SensorPlugin) Allocate(ctx context.Context, reqs *pluginapi.AllocateReq
 	for _, req := range reqs.ContainerRequests {
 		for _, id := range req.DevicesIDs {
 			if !m.deviceExists(id) {
-				return nil, fmt.Errorf("invalid allocation request for '%s': unknown device: %s", m.resourceName, id)
+				return nil, fmt.Errorf("invalid allocation request for '%s': unknown device: %s", m.resource, id)
 			}
 		}
 
@@ -314,9 +363,9 @@ func (m *SensorPlugin) deviceExists(id string) bool {
 	return false
 }
 
-func (m *SensorPlugin) apiDevices() []*pluginapi.Device {
+func (m *SensorPlugin) apiDevices(sensors map[string]*Sensor) []*pluginapi.Device {
 	var pdevs []*pluginapi.Device
-	for _, d := range m.cachedSensors {
+	for _, d := range sensors {
 		pdevs = append(pdevs, &d.Device)
 	}
 	return pdevs

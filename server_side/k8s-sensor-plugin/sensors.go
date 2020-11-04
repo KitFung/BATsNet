@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
@@ -11,8 +12,8 @@ import (
 
 type Sensor struct {
 	pluginapi.Device
-	resourceName string
-	fullName     string
+	resource string
+	fullName string
 }
 
 type ResourceManager interface {
@@ -21,6 +22,10 @@ type ResourceManager interface {
 }
 type SensorManager struct {
 	etcdClient *clientv3.Client
+}
+
+func ResourceName(resource string) string {
+	return resourceNamePrefix + "-" + resource
 }
 
 func NewSensorManager() *SensorManager {
@@ -33,31 +38,35 @@ func NewSensorManager() *SensorManager {
 	}
 }
 
-func buildSensor(resourceName string, fullName string) *Sensor {
+func GetSensors(cli *clientv3.Client) (map[string]*Sensor, error) {
+	sensors := make(map[string]*Sensor)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	resp, err := cli.Get(ctx, "/_control",
+		clientv3.WithRange(clientv3.GetPrefixRangeEnd("/_control")),
+		clientv3.WithSort(clientv3.SortByKey, clientv3.SortAscend))
+	cancel()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, ev := range resp.Kvs {
+		key := string(ev.Key)
+		eles := strings.Split(key, "/")
+		if len(eles) > 2 && len(eles[2]) > 0 {
+			resource := eles[2]
+			fullName := "/" + strings.Join(eles[2:], "/")
+			sensors[fullName] = buildSensor(resource, fullName)
+		}
+	}
+	return sensors, nil
+}
+
+func buildSensor(resource string, fullName string) *Sensor {
 	sensor := &Sensor{
-		resourceName: resourceName,
-		fullName:     fullName,
+		resource: resource,
+		fullName: fullName,
 	}
 	sensor.ID = fullName
 	sensor.Health = pluginapi.Healthy
 	return sensor
-}
-
-// Later setup etcd in fog, and let it register to fog
-func (m *SensorManager) CheckHealth(stop <-chan interface{}, sensors []*Sensor, unhealthy chan<- *Sensor) {
-	for {
-		select {
-		case <-stop:
-			return
-		default:
-		}
-		for _, s := range sensors {
-			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-			_, err := m.etcdClient.Get(ctx, s.fullName)
-			cancel()
-			if err != nil {
-				unhealthy <- s
-			}
-		}
-	}
 }

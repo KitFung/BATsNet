@@ -59,6 +59,9 @@ L:
 
 		select {
 
+		case update := <-plugins.update:
+			plugins.CheckUpdate(update)
+
 		case event := <-watcher.Events:
 			if event.Name == pluginapi.KubeletSocket && event.Op&fsnotify.Create == fsnotify.Create {
 				log.Printf("inotify: %s created, restarting.", pluginapi.KubeletSocket)
