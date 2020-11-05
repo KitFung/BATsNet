@@ -34,7 +34,11 @@ func main() {
 
 	log.Println("Starting OS watcher.")
 	sigs := newOSWatcher(syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-
+	labelMan, err := NewLabelUpdater()
+	if err != nil {
+		log.Printf("Failed to connect to k8s cluster: %v.", err)
+		os.Exit(1)
+	}
 	var plugins *SensorPlugins
 
 restart:
@@ -43,7 +47,8 @@ restart:
 	}
 
 	log.Println("Retreiving plugins.")
-	plugins = NewSensorPlugins()
+	plugins, fullNames := NewSensorPlugins()
+	labelMan.UpdateLabels(fullNames)
 
 	if err := plugins.Start(); err != nil {
 		log.SetOutput(os.Stderr)
@@ -61,6 +66,11 @@ L:
 
 		case update := <-plugins.update:
 			plugins.CheckUpdate(update)
+
+		case fullNames := <-plugins.fullNames:
+			if err := labelMan.UpdateLabels(fullNames); err != nil {
+				log.Panic(err)
+			}
 
 		case event := <-watcher.Events:
 			if event.Name == pluginapi.KubeletSocket && event.Op&fsnotify.Create == fsnotify.Create {

@@ -36,21 +36,26 @@ type SensorPlugins struct {
 	etcdClient *clientv3.Client
 	plugins    map[string]*SensorPlugin
 	update     chan map[string]map[string]*Sensor
+	fullNames  chan []string
 }
 
-func NewSensorPlugins() *SensorPlugins {
+func NewSensorPlugins() (*SensorPlugins, []string) {
 	cli, _ := clientv3.New(clientv3.Config{
 		Endpoints:   []string{os.Getenv("NODE_IP") + ":2379"},
 		DialTimeout: 5 * time.Second,
 	})
 	update := make(chan map[string]map[string]*Sensor)
+	p, fns := GetPlugins(cli)
 	plugins := &SensorPlugins{
 		etcdClient: cli,
-		plugins:    GetPlugins(cli),
+		plugins:    p,
 		update:     update,
+		fullNames:  make(chan []string),
 	}
+
 	go func(p *SensorPlugins) {
 		for {
+			var fullNames []string
 			gsensors := make(map[string]map[string]*Sensor)
 			sensors, err := GetSensors(p.etcdClient)
 			if err != nil {
@@ -60,17 +65,20 @@ func NewSensorPlugins() *SensorPlugins {
 			for _, s := range sensors {
 				fullName := s.fullName
 				resource := s.resource
+				fullNames = append(fullNames, fullName)
 				if gsensors[resource] == nil {
 					gsensors[resource] = make(map[string]*Sensor)
 				}
 				gsensors[resource][fullName] = s
 			}
 			p.update <- gsensors
+			p.fullNames <- fullNames
 			time.Sleep(5 * time.Second)
 		}
 		close(p.update)
+		close(p.fullNames)
 	}(plugins)
-	return plugins
+	return plugins, fns
 }
 
 func (m *SensorPlugins) CheckUpdate(sensors map[string]map[string]*Sensor) {
@@ -136,9 +144,9 @@ func (m *SensorPlugins) Start() error {
 	return nil
 }
 
-func GetPlugins(cli *clientv3.Client) map[string]*SensorPlugin {
+func GetPlugins(cli *clientv3.Client) (map[string]*SensorPlugin, []string) {
 	var plugins = make(map[string]*SensorPlugin)
-
+	var fullNames []string
 	sensors, err := GetSensors(cli)
 	if err != nil {
 		log.Fatal(err)
@@ -147,6 +155,7 @@ func GetPlugins(cli *clientv3.Client) map[string]*SensorPlugin {
 	for _, sensor := range sensors {
 		resource := sensor.resource
 		fullName := sensor.fullName
+		fullNames = append(fullNames, fullName)
 		if val, ok := plugins[resource]; ok {
 			val.cachedSensors[fullName] = sensor
 		} else {
@@ -157,7 +166,7 @@ func GetPlugins(cli *clientv3.Client) map[string]*SensorPlugin {
 				map[string]*Sensor{fullName: sensor})
 		}
 	}
-	return plugins
+	return plugins, fullNames
 }
 
 func NewSensorPlugin(sensorsManager SensorManager, resource string, socket string, cachedSensors map[string]*Sensor) *SensorPlugin {
