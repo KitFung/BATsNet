@@ -1,0 +1,93 @@
+syntax = "proto2";
+
+option go_package = "github.com/KitFung/tb-iot/tb";
+
+package tb;
+
+service TestBedMaster {
+    rpc NewTask (NewTaskRequest) returns (NewTaskResponse) {}
+    rpc GetTask (GetTaskRequest) returns (GetTaskResponse) {}
+    rpc ListNodes (ListNodesRequest) returns (ListNodesResponse) {}
+}
+
+enum Sensor {
+    CAMERA = 0;
+    RADAR = 1;
+    LIDAR = 2;
+    THERMAL = 3;
+}
+
+message TaskStatus {
+
+}
+
+message NodeSpec {
+    repeated Sensor sensorType = 1;
+    optional string nodeName = 2;
+}
+
+message Node {
+    enum NodeStatus {
+        ONLINE = 1;
+        OFFLINE = 2;
+    }
+    required string name = 1;
+    required NodeStatus status = 2;
+
+    repeated Sensor onlineSensorType = 3;
+    repeated string onlineSensor = 4;
+
+    optional int32 runningTask = 5;
+    // @TODO
+}
+
+message NodeNetwork {
+    repeated Node node = 1;
+    // @TODO
+}
+
+message Task {
+    required string image = 1;
+    optional string cmd = 2;
+    map<string, int32> device = 3;
+    repeated Sensor sensor = 4;
+    optional NodeSpec nodeSpec = 5;
+
+    optional TaskStatus status = 10;
+}
+
+message NewTaskRequest {
+    required string taskName = 1;
+    required string userName = 2;
+    // required string userCert = 3;
+    required string userEmail = 4;
+    required Task taskInfo = 5;
+}
+
+message NewTaskResponse {
+    // If fail
+    repeated string error = 1;
+    // Otherwise success
+    optional string taskId = 2;
+    optional Task taskInfo = 3;
+}
+
+message GetTaskRequest {
+    optional string taskName = 1;
+    optional string taskId = 2;
+}
+
+message GetTaskResponse {
+    // If fail
+    repeated string error = 1;
+    // Otherwise success
+    optional Task taskInfo = 2;
+}
+
+message ListNodesRequest {
+}
+
+message ListNodesResponse {
+    repeated string error = 1;
+    optional NodeNetwork network = 2;
+}
