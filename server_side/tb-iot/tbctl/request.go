@@ -30,9 +30,6 @@ type TaskConfig struct {
 	}
 }
 
-type TaskCreationRequest struct {
-}
-
 func (t *TaskConfig) Validate() error {
 	if len(t.taskName) == 0 {
 		return errors.New("Task Name cannot be empty")
@@ -100,6 +97,7 @@ func NewTaskRequest(address string, taskYaml string) error {
 	c := pb.NewTestBedMasterClient(conn)
 
 	taskInfo := &pb.Task{
+		Name:  &taskConf.taskName,
 		Image: &taskConf.taskInfo.image,
 	}
 	if len(taskConf.taskInfo.cmd) > 0 {

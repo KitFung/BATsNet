@@ -17,10 +17,6 @@ enum Sensor {
     THERMAL = 3;
 }
 
-message TaskStatus {
-
-}
-
 message NodeSpec {
     repeated Sensor sensorType = 1;
     optional string nodeName = 2;
@@ -47,13 +43,14 @@ message NodeNetwork {
 }
 
 message Task {
-    required string image = 1;
-    optional string cmd = 2;
-    map<string, int32> device = 3;
-    repeated Sensor sensor = 4;
-    optional NodeSpec nodeSpec = 5;
+    required string name = 1;
+    required string image = 2;
+    optional string cmd = 3;
+    map<string, int32> device = 4;
+    repeated Sensor sensor = 5;
+    optional NodeSpec nodeSpec = 6;
 
-    optional TaskStatus status = 10;
+    optional string status = 10;
 }
 
 message NewTaskRequest {

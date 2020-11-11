@@ -36,7 +36,8 @@ func NewLabelUpdater() (*LabelsUpdater, error) {
 func FullNameToLabel(fullName string) string {
 	fullName = strings.ReplaceAll(fullName, "/", ".")
 	fullName = strings.TrimLeft(fullName, ".")
-	return "sensor~1" + fullName
+	resource := strings.Split(fullName, ".")[0]
+	return "sensor-" + resource + "~1" + fullName
 }
 
 func (m *LabelsUpdater) ConstructPatchJson(addLabels []string, delLabels []string) string {
@@ -64,7 +65,7 @@ func (m *LabelsUpdater) UpdateLabels(fullNames []string) error {
 
 	oldSensorLabels := make(map[string]bool)
 	for k := range node.Labels {
-		if strings.HasPrefix(k, "sensor/") {
+		if strings.HasPrefix(k, "sensor-") {
 			oldSensorLabels[strings.ReplaceAll(k, "/", "~1")] = true
 		}
 	}

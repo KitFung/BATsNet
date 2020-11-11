@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: demo-image-detection
-  namespace: demo
+  namespace: task
 spec:
   hostNetwork: true
   restartPolicy: OnFailure
