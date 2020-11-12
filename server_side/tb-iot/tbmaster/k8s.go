@@ -69,13 +69,9 @@ func GetSensors(labels []string) ([]string, []pb.Sensor) {
 	return sensors, sensorsType
 }
 
-func ReadTaskSettingFromDisk() map[string]*pb.Task {
-	tasks := make(map[string]*pb.Task)
-	return tasks
-}
 func (m *K8SConn) DiscoveryNetwork(network *TBNetwork) {
+	// network.tasks = make(map[string]*pb.Task)
 	network.nodes = make(map[string]*pb.Node)
-	network.tasks = make(map[string]*pb.Task)
 
 	nodes, err := m.clientSet.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
@@ -86,7 +82,7 @@ func (m *K8SConn) DiscoveryNetwork(network *TBNetwork) {
 		log.Panic(err)
 	}
 
-	tasks := ReadTaskSettingFromDisk()
+	tasks := network.tasks
 	unknownStatus := string(apiv1.PodUnknown)
 	for _, t := range tasks {
 		t.Status = &unknownStatus

@@ -18,8 +18,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
+	tbnet := NewTBNetwork()
+	defer tbnet.Close()
 	go func() {
-		tbnet := NewTBNetwork()
 		for {
 			tbnet.Update()
 			time.Sleep(1 * time.Second)
@@ -27,7 +28,9 @@ func main() {
 	}()
 
 	s := grpc.NewServer()
-	pb.RegisterTestBedMasterServer(s, &TestBedCliServer{})
+	pb.RegisterTestBedMasterServer(s, &TestBedCliServer{
+		tbnet: tbnet,
+	})
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
