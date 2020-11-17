@@ -73,6 +73,11 @@ func (m *TBNetwork) Update() {
 func ReadTasksFromDisk() map[string]*pb.Task {
 	// |strlen|protolen|k|proto|
 	// |4|4|strlen|protolen|
+	tasks := make(map[string]*pb.Task)
+	if _, err := os.Stat(taskFolder); os.IsNotExist(err) {
+		return tasks
+	}
+
 	f, err := os.Open(taskFolder)
 	check(err)
 	defer f.Close()
@@ -82,8 +87,6 @@ func ReadTasksFromDisk() map[string]*pb.Task {
 
 	fsize := fi.Size()
 	fptr := int64(0)
-
-	tasks := make(map[string]*pb.Task)
 
 	reader := bufio.NewReader(f)
 	for fptr < fsize {

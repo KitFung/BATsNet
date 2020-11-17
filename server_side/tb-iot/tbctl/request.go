@@ -14,33 +14,33 @@ import (
 )
 
 type TaskConfig struct {
-	taskName  string
-	userName  string
-	userCert  string // The file path to the cert file
-	userEmail string
-	taskInfo  struct {
-		image    string // Must uploaded to the 137.189.97.26:5000 register
-		cmd      string
-		device   map[string]int32 // ex: gpu:2, fpga: 2
-		sensor   []string         // Used sensor data. Just for reference right now
-		nodeSpec struct {         // Affect how task allocate to node
-			sensorType []string // Must in node with those sensor
-			nodeName   string   // Must in specific node
-		}
-	}
+	Name  string `yaml:"Name"`
+	User  string `yaml:"User"`
+	Cert  string `yaml:"Cert"` // The file path to the cert file
+	Email string `yaml:"Email"`
+	Info  struct {
+		Image    string           `yaml:"Image"` // Must uploaded to the 137.189.97.26:5000 register
+		Cmd      string           `yaml:"Cmd"`
+		Device   map[string]int32 `yaml:"Device"` // ex: gpu:2, fpga: 2
+		Sensor   []string         `yaml:"Sensor"` // Used sensor data. Just for reference right now
+		NodeSpec struct {         // Affect how task allocate to node
+			SensorType []string `yaml:"SensorType"` // Must in node with those sensor
+			NodeName   string   `yaml:"NodeName"`   // Must in specific node
+		} `yaml:"NodeSpec"`
+	} `yaml:"Info"`
 }
 
 func (t *TaskConfig) Validate() error {
-	if len(t.taskName) == 0 {
+	if len(t.Name) == 0 {
 		return errors.New("Task Name cannot be empty")
 	}
-	if len(t.userName) == 0 {
+	if len(t.User) == 0 {
 		return errors.New("User Name cannot be empty")
 	}
-	if len(t.userEmail) == 0 || !isEmailValid(t.userEmail) {
+	if len(t.Email) == 0 || !isEmailValid(t.Email) {
 		return errors.New("User Email is Invalid")
 	}
-	if len(t.taskInfo.image) == 0 {
+	if len(t.Info.Image) == 0 {
 		return errors.New("Task Image cannot be empty")
 	}
 
@@ -54,10 +54,13 @@ func NewTaskConfig(fpath string) (*TaskConfig, error) {
 	}
 
 	t := &TaskConfig{}
-	err = yaml.Unmarshal(dat, &t)
+	err = yaml.Unmarshal(dat, t)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(fpath)
+	fmt.Println(t)
+
 	if err = t.Validate(); err != nil {
 		return nil, err
 	}
@@ -80,70 +83,78 @@ func pb_Sensor(str string) (pb.Sensor, error) {
 }
 
 func NewTaskRequest(address string, taskYaml string) error {
+	fmt.Println("A")
+
 	taskConf, err := NewTaskConfig(taskYaml)
 	if err != nil {
 		log.Fatalf("Error while parsing the input yaml: %v", err)
 	}
-
+	fmt.Println("B")
+	fmt.Println(address)
 	conn, err := NewGrpcConn(address)
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
+	fmt.Println("C")
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
+	fmt.Println("D")
 
 	c := pb.NewTestBedMasterClient(conn)
+	fmt.Println("E")
 
-	taskInfo := &pb.Task{
-		Name:  &taskConf.taskName,
-		Image: &taskConf.taskInfo.image,
+	Info := &pb.Task{
+		Name:  &taskConf.Name,
+		Image: &taskConf.Info.Image,
 	}
-	if len(taskConf.taskInfo.cmd) > 0 {
-		taskInfo.Cmd = &taskConf.taskInfo.cmd
+	if len(taskConf.Info.Cmd) > 0 {
+		Info.Cmd = &taskConf.Info.Cmd
 	}
-	if len(taskConf.taskInfo.device) > 0 {
-		taskInfo.Device = taskConf.taskInfo.device
+	if len(taskConf.Info.Device) > 0 {
+		Info.Device = taskConf.Info.Device
 	}
-	if len(taskConf.taskInfo.sensor) > 0 {
+	if len(taskConf.Info.Sensor) > 0 {
 		var sensor []pb.Sensor
-		for _, str := range taskConf.taskInfo.sensor {
+		for _, str := range taskConf.Info.Sensor {
 			t, err := pb_Sensor(str)
 			if err != nil {
 				log.Panic(err)
 			}
 			sensor = append(sensor, t)
 		}
-		taskInfo.Sensor = sensor
+		Info.Sensor = sensor
 	}
-	uNodeSpec := &taskConf.taskInfo.nodeSpec
-	if len(uNodeSpec.sensorType) > 0 || len(uNodeSpec.nodeName) > 0 {
-		nodeSpec := &pb.NodeSpec{}
-		if len(uNodeSpec.sensorType) > 0 {
+	unodespec := &taskConf.Info.NodeSpec
+	if len(unodespec.SensorType) > 0 || len(unodespec.NodeName) > 0 {
+		nodespec := &pb.NodeSpec{}
+		if len(unodespec.SensorType) > 0 {
 			var sensor []pb.Sensor
-			for _, str := range taskConf.taskInfo.sensor {
+			for _, str := range taskConf.Info.Sensor {
 				t, err := pb_Sensor(str)
 				if err != nil {
 					log.Panic(err)
 				}
 				sensor = append(sensor, t)
 			}
-			nodeSpec.SensorType = sensor
+			nodespec.SensorType = sensor
 		}
-		if len(uNodeSpec.nodeName) > 0 {
-			nodeSpec.NodeName = &uNodeSpec.nodeName
+		if len(unodespec.NodeName) > 0 {
+			nodespec.NodeName = &unodespec.NodeName
 		}
 	}
 
 	req := &pb.NewTaskRequest{
-		TaskName:  &taskConf.taskName,
-		UserName:  &taskConf.userName,
-		UserEmail: &taskConf.userEmail,
-		TaskInfo:  taskInfo,
+		TaskName:  &taskConf.Name,
+		UserName:  &taskConf.User,
+		UserEmail: &taskConf.Email,
+		TaskInfo:  Info,
 	}
+
+	fmt.Println("Submit new task")
 	resp, err := c.NewTask(ctx, req)
 
-	print("%v\n", resp)
+	fmt.Printf("%v\n", resp)
 	return err
 }

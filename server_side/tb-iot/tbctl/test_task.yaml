@@ -1,0 +1,11 @@
+Name: testTask
+User: kit
+Cert: c@12CA3)vsdf"a{Wd02}
+Email: kit@kit.com
+Info:
+  Image: localhost:5000/batsnet_image_detect_demo
+  Device:
+    gpu: 1
+  Sensor:
+    - LIDAR
+    - CAMERA

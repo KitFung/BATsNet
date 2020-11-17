@@ -24,7 +24,7 @@ func main() {
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:        "s",
-				Value:       "137.189.97.26:76107",
+				Value:       "137.189.97.26:30776",
 				Usage:       "The address of the server",
 				Destination: &serverAddr,
 			},

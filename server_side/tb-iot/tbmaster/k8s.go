@@ -121,14 +121,13 @@ func (m *K8SConn) DiscoveryNetwork(network *TBNetwork) {
 					isReady = cond.Status == apiv1.ConditionTrue
 				}
 			}
-
-			pbnode := &pb.Node{
-				Name: &node.Name,
-			}
+			nodeStatus := pb.Node_OFFLINE
 			if isReady {
-				*pbnode.Status = pb.Node_ONLINE
-			} else {
-				*pbnode.Status = pb.Node_OFFLINE
+				nodeStatus = pb.Node_ONLINE
+			}
+			pbnode := &pb.Node{
+				Name:   &node.Name,
+				Status: &nodeStatus,
 			}
 			var labels []string
 			for k, _ := range node.Labels {

@@ -2,6 +2,7 @@
 
 https://yanwei-liu.medium.com/nvidia-jetson-tx2%E5%AD%B8%E7%BF%92%E7%AD%86%E8%A8%98-%E4%B8%80-3dab5640968e
 
+### Set disk
 The disk mount: need add `nofail` to it option
 
 Assume already setup the disk, then create file `/etc/init.d/mounta` with content
@@ -13,6 +14,24 @@ route add -net 192.168.100.0/24 gw 10.42.0.100 dev eth0
 ```
 then chmod +x to that file
 
+### Set network
+then vim `/etc/network/interfaces`
+add below
+
+```
+auto lo
+iface lo inet loopback
+
+auto eth0
+allow-hotplug eth0
+iface eth0 inet static
+address 10.0.0.2
+netmask 255.255.255.0
+network 10.0.0.0
+broadcast 10.0.0.255
+```
+then reboot
+
 ## Step 2: Install the Docker
 
 https://docs.docker.com/engine/install/
@@ -20,6 +39,7 @@ https://docs.docker.com/engine/install/
 Add this args to `/etc/docker/daemon.json`
 ```
 {
+    "default-runtime": "nvidia",
     "insecure-registries": [
         "137.189.97.26:5000"
     ]
@@ -29,6 +49,19 @@ Add this args to `/etc/docker/daemon.json`
 ## Step 3: Install Cmake with version >= 3.18.3
 
 https://cmake.org/download/
+
+```
+sudo apt install -y libssl-dev
+
+curl -LO https://github.com/Kitware/CMake/releases/download/v3.19.0-rc3/cmake-3.19.0-rc3.tar.gz
+tar zxvf cmake-3.19.0-rc3.tar.gz
+rm -rf cmake-3.19.0-rc3.tar.gz
+cd cmake-3.19.0-rc3
+mkdir build
+cd build
+cmake ..
+make -j4
+```
 
 ## Step 4: Installing Environment
 
@@ -40,7 +73,8 @@ sudo apt update && sudo apt install -y libmosquitto-dev \
     libmosquittopp-dev libssl-dev liblz4-dev \
     build-essential pkg-config \
     cmake autoconf automake libtool curl make g++ unzip \
-    python3.6-dev libboost-all-dev libyaml-cpp-dev libpcap-dev
+    python3.6-dev libboost-all-dev libyaml-cpp-dev libpcap-dev \
+    openssh-server libc-ares2 libc-ares-dev
 
 # protobuf
 curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v3.12.3/protobuf-all-3.12.3.tar.gz
@@ -58,7 +92,7 @@ git clone https://github.com/pybind/pybind11.git
 pushd pybind11
 mkdir build
 pushd build
-cmake .. && make -j
+cmake .. && make -j4
 sudo make install
 popd
 popd
@@ -78,7 +112,7 @@ popd
 
 
 # casablanca
-sudo apt-get install g++ git libboost-atomic-dev \
+sudo apt-get -y install g++ git libboost-atomic-dev \
  libboost-thread-dev libboost-system-dev libboost-date-time-dev \
  libboost-regex-dev libboost-filesystem-dev libboost-random-dev \
  libboost-chrono-dev libboost-serialization-dev libboost-locale-dev \
@@ -134,6 +168,8 @@ sudo service etcd restart
 ## Step 5: Compiling this library
 
 ```
+# If haven't clone the submodule
+# git submodule update --init
 mkdir build
 cmake -DIN_FOG=ON ..
 make -j4

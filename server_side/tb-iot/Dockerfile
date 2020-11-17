@@ -39,4 +39,6 @@ FROM --platform=linux/amd64 debian:stretch-slim
 
 COPY --from=build /go/bin/tbmaster /usr/bin/tbmaster
 
-# ENTRYPOINT ["tbmaster"]
+RUN mkdir -p /opt/tbmaster
+
+ENTRYPOINT ["tbmaster"]
