@@ -16,7 +16,7 @@ Assume already setup the disk, then create file `/etc/init.d/mounta` with conten
 ### END INIT INFO
 /bin/sleep 20
 /sbin/swapoff -a
-/sbin/route add -net 192.168.100.0/24 gw 10.42.0.100 dev eth0
+/sbin/route add -net 192.168.100.0/24 gw 10.0.0.100 dev eth0
 /bin/mount -a
 ```
 then chmod +x to that file
