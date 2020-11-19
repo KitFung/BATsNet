@@ -65,6 +65,7 @@ spec:
         value: "true"
         effect: "NoSchedule"
       priorityClassName: "system-node-critical"
+      hostNetwork: true
       containers:
       - image: 137.189.97.26:5000/cuhk-sensor-plugin:v0.0.1
         name: cuhk-sensor-plugin-ctr
@@ -78,9 +79,7 @@ spec:
             mountPath: /var/lib/kubelet/device-plugins
         env:
         - name: NODE_IP
-          valueFrom:
-            fieldRef:
-              fieldPath: status.hostIP
+          value: "127.0.0.1"
         - name: NODE_NAME
           valueFrom:
             fieldRef:

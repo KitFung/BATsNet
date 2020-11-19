@@ -201,7 +201,7 @@ sudo apt install -y python3-pip
 sudo pip3 install setuptools
 bash prepare.sh
 python3 setup.py build
-suod pip3 install --upgrade cython
+sudo pip3 install --upgrade cython
 pip3 install --user .
 ```
 
@@ -286,5 +286,5 @@ deb https://apt.kubernetes.io/ kubernetes-xenial main
 EOF
 sudo apt-get update
 sudo apt-get install -y kubelet kubeadm kubectl
-sudo apt-mark hold kubelet kubeadm kubectl  ca
+sudo apt-mark hold kubelet kubeadm kubectl
 ```

@@ -146,6 +146,7 @@ func (m *TBNetwork) WriteTask(name string, task *pb.Task) bool {
 	m.tasks[name] = task
 
 	// Assign Task to K8S
+	GetK8SConn().SubmitTask(task)
 	return true
 }
 

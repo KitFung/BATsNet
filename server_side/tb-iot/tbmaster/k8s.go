@@ -5,15 +5,18 @@ import (
 	"log"
 	"strings"
 	"sync"
+	"time"
 
 	pb "github.com/KitFung/tb-iot/proto"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
 
 const K8SMasterLabel = "node-role.kubernetes.io/master"
+const TBAppsNamespace = "testbed-apps"
 
 // Using k8s status as db to search status
 type K8SConn struct {
@@ -138,4 +141,37 @@ func (m *K8SConn) DiscoveryNetwork(network *TBNetwork) {
 			network.nodes[node.Name] = pbnode
 		}
 	}
+}
+
+func (m *K8SConn) SubmitTask(t *pb.Task) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	req := &apiv1.Pod{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Pod",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: t.GetName(),
+		},
+		Spec: apiv1.PodSpec{
+			Containers: []apiv1.Container{
+				{
+					Name:  t.GetName(),
+					Image: t.GetImage(),
+				},
+			},
+			HostNetwork: true,
+		},
+	}
+	limit := apiv1.ResourceList{}
+	for k, v := range t.GetDevice() {
+		q := resource.MustParse(string(v))
+		limit[apiv1.ResourceName(k)] = q
+	}
+	req.Spec.Containers[0].Resources.Limits = limit
+	_, err := m.clientSet.CoreV1().Pods(TBAppsNamespace).Create(
+		ctx, req,
+		metav1.CreateOptions{})
+	check(err)
 }
