@@ -80,7 +80,7 @@ func (m *K8SConn) DiscoveryNetwork(network *TBNetwork) {
 	if err != nil {
 		log.Panic(err)
 	}
-	pods, err := m.clientSet.CoreV1().Pods("task").List(context.TODO(), metav1.ListOptions{})
+	pods, err := m.clientSet.CoreV1().Pods(TBAppsNamespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		log.Panic(err)
 	}

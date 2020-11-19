@@ -21,8 +21,25 @@ rules:
 - apiGroups: [""]
   resources: ["nodes"]
   verbs: ["get","list"]
-- apiGroups: [testbed-apps", "testbed-system"]
-  resources: ["pods","nodes"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: testbed-apps
+  name: testbed-apps-manager
+rules:
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["pods"]
+  verbs: ["get","list","update","patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: testbed-system
+  name: testbed-system-manager
+rules:
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["pods"]
   verbs: ["get","list","update","patch"]
 ---
 apiVersion: v1
@@ -34,11 +51,39 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: testbed-system-bind
+  name: testbed-node-bind
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: tbmaster-role
+subjects:
+- kind: ServiceAccount
+  name: tbmaster-ac
+  namespace: testbed-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: testbed-system-pod-bind
+  namespace: testbed-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: testbed-system-manager
+subjects:
+- kind: ServiceAccount
+  name: tbmaster-ac
+  namespace: testbed-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: testbed-apps-pod-bind
+  namespace: testbed-apps
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: testbed-apps-manager
 subjects:
 - kind: ServiceAccount
   name: tbmaster-ac
