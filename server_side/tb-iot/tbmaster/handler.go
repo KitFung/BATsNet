@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"regexp"
 
 	pb "github.com/KitFung/tb-iot/proto"
@@ -23,6 +24,7 @@ func VerifyTaskName(name string) bool {
 }
 
 func (m *TestBedCliServer) NewTask(ctx context.Context, in *pb.NewTaskRequest) (*pb.NewTaskResponse, error) {
+	fmt.Println("Receive NewTask")
 	// Step 1. Verifiy Input
 	if !VerifyTaskName(*in.TaskName) {
 		reason := "Unacceptable task name"
@@ -30,13 +32,15 @@ func (m *TestBedCliServer) NewTask(ctx context.Context, in *pb.NewTaskRequest) (
 			Error: []string{reason},
 		}, errors.New(reason)
 	}
-
+	fmt.Println("Add NewTask")
 	// Step 2: Add the task
 	succ := m.tbnet.WriteTask(*in.TaskName, in.TaskInfo)
 	if succ {
+		fmt.Println("Succ")
 		resp := &pb.NewTaskResponse{}
 		return resp, nil
 	} else {
+		fmt.Println("Failed")
 		reason := "Repeated Task"
 		return &pb.NewTaskResponse{
 			Error: []string{reason},

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strings"
 	"sync"
@@ -73,6 +74,7 @@ func GetSensors(labels []string) ([]string, []pb.Sensor) {
 }
 
 func (m *K8SConn) DiscoveryNetwork(network *TBNetwork) {
+	fmt.Println("DiscoveryNetwork")
 	// network.tasks = make(map[string]*pb.Task)
 	network.nodes = make(map[string]*pb.Node)
 
@@ -166,6 +168,7 @@ func (m *K8SConn) SubmitTask(t *pb.Task) {
 	}
 	limit := apiv1.ResourceList{}
 	for k, v := range t.GetDevice() {
+		fmt.Println(string(v))
 		q := resource.MustParse(string(v))
 		limit[apiv1.ResourceName(k)] = q
 	}

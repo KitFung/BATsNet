@@ -11,7 +11,7 @@ fog_service_id = sys.argv[1]
 envoy_address_port = sys.argv[2]
 
 # etcd = etcd3.client(host='0.0.0.0', port=2379)
-etcd = etcd3.client(host='10.42.0.100', port=2379)
+etcd = etcd3.client(host='10.0.0.100', port=2379)
 start_time = datetime.datetime.now()
 
 while True:

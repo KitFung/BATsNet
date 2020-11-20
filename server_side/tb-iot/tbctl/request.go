@@ -83,27 +83,17 @@ func pb_Sensor(str string) (pb.Sensor, error) {
 }
 
 func NewTaskRequest(address string, taskYaml string) error {
-	fmt.Println("A")
-
 	taskConf, err := NewTaskConfig(taskYaml)
 	if err != nil {
 		log.Fatalf("Error while parsing the input yaml: %v", err)
 	}
-	fmt.Println("B")
-	fmt.Println(address)
 	conn, err := NewGrpcConn(address)
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
-	fmt.Println("C")
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	fmt.Println("D")
 
 	c := pb.NewTestBedMasterClient(conn)
-	fmt.Println("E")
 
 	Info := &pb.Task{
 		Name:  &taskConf.Name,
@@ -151,6 +141,9 @@ func NewTaskRequest(address string, taskYaml string) error {
 		UserEmail: &taskConf.Email,
 		TaskInfo:  Info,
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
 
 	fmt.Println("Submit new task")
 	resp, err := c.NewTask(ctx, req)

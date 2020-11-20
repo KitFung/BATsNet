@@ -28,12 +28,6 @@ func main() {
 				Usage:       "The address of the server",
 				Destination: &serverAddr,
 			},
-			&cli.StringFlag{
-				Name:        "f",
-				Value:       "./task.yaml",
-				Usage:       "The task config file",
-				Destination: &taskYaml,
-			},
 		},
 		Action: func(c *cli.Context) error {
 			PrintVersion()
@@ -57,6 +51,14 @@ func main() {
 					err := NewTaskRequest(serverAddr, taskYaml)
 					return err
 				},
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:        "f",
+						Value:       "./task.yaml",
+						Usage:       "The task config file",
+						Destination: &taskYaml,
+					},
+				},
 			},
 			{
 				Name:    "check",
@@ -76,6 +78,7 @@ func main() {
 			},
 		},
 	}
+	app.EnableBashCompletion = true
 
 	err := app.Run(os.Args)
 	if err != nil {
