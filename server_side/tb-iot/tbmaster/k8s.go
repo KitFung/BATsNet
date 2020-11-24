@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -166,10 +167,10 @@ func (m *K8SConn) SubmitTask(t *pb.Task) {
 			HostNetwork: true,
 		},
 	}
+	fmt.Println(t)
 	limit := apiv1.ResourceList{}
 	for k, v := range t.GetDevice() {
-		fmt.Println(string(v))
-		q := resource.MustParse(string(v))
+		q := resource.MustParse(strconv.Itoa(int(v)))
 		limit[apiv1.ResourceName(k)] = q
 	}
 	req.Spec.Containers[0].Resources.Limits = limit
