@@ -148,6 +148,30 @@ func NewTaskRequest(address string, taskYaml string) error {
 	fmt.Println("Submit new task")
 	resp, err := c.NewTask(ctx, req)
 
-	fmt.Printf("%v\n", resp)
+	fmt.Printf("resp: %v\n", resp)
+	return err
+}
+
+func CheckTaskRequest(address string, taskName string) error {
+	if len(taskName) == 0 {
+		log.Fatalf("Must provide non empty Task Name")
+	}
+
+	conn, err := NewGrpcConn(address)
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+	c := pb.NewTestBedMasterClient(conn)
+
+	req := &pb.GetTaskRequest{
+		TaskName: &taskName,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+	resp, err := c.GetTask(ctx, req)
+
+	fmt.Printf("resp: %v\n", resp)
 	return err
 }

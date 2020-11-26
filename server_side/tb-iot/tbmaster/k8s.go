@@ -144,6 +144,7 @@ func (m *K8SConn) DiscoveryNetwork(network *TBNetwork) {
 			network.nodes[node.Name] = pbnode
 		}
 	}
+	fmt.Printf("net status: %v\n", network)
 }
 
 func (m *K8SConn) SubmitTask(t *pb.Task) {

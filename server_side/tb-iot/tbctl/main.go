@@ -17,6 +17,7 @@ func main() {
 	var serverAddr string
 
 	var taskYaml string
+	var taskName string
 
 	app := &cli.App{
 		Name:  "kbctl",
@@ -65,7 +66,16 @@ func main() {
 				Aliases: []string{"c"},
 				Usage:   "Check the task execution status",
 				Action: func(c *cli.Context) error {
-					return nil
+					err := CheckTaskRequest(serverAddr, taskName)
+					return err
+				},
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:        "n",
+						Value:       "taskName",
+						Usage:       "The task name",
+						Destination: &taskName,
+					},
 				},
 			},
 			{

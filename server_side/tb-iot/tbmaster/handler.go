@@ -17,7 +17,7 @@ type TestBedCliServer struct {
 	tbnet *TBNetwork
 }
 
-var nameRegex = regexp.MustCompile("^[A-Za-z0-9]+$")
+var nameRegex = regexp.MustCompile("^[a-z0-9]([-a-z0-9]*[a-z0-9])?$")
 
 func VerifyTaskName(name string) bool {
 	return nameRegex.MatchString(name)
@@ -34,6 +34,7 @@ func (m *TestBedCliServer) NewTask(ctx context.Context, in *pb.NewTaskRequest) (
 	}
 	fmt.Println("Add NewTask")
 	// Step 2: Add the task
+	fmt.Printf("%v\n", in.TaskInfo)
 	succ := m.tbnet.WriteTask(*in.TaskName, in.TaskInfo)
 	if succ {
 		fmt.Println("Succ")
