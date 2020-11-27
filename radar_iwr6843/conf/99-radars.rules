@@ -1,0 +1,4 @@
+SUBSYSTEM=="tty", ENV{ID_PATH}=="platform-3530000.xhci-usb-0:2.1:1.0", ENV{MINOR}=="0", GROUP="dialout", MODE="0666", SYMLINK="radar_control_0"
+SUBSYSTEM=="tty", ENV{ID_PATH}=="platform-3530000.xhci-usb-0:2.1:1.3", ENV{MINOR}=="1", GROUP="dialout", MODE="0666", SYMLINK="radar_data_0"
+# SUBSYSTEM=="tty", KERNEL=="tty", ENV{ID_FS_UUID}=="4A6F2ABC1232FA37",GROUP="tty", MODE="0666",SYMLINK="radar_control_1"
+# SUBSYSTEM=="tty", KERNEL=="tty", ENV{ID_FS_UUID}=="4A6F2ABC1232FA37",GROUP="tty", MODE="0666",SYMLINK="radar_data_1"
