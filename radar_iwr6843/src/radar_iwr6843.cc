@@ -92,6 +92,12 @@ int main(int argc, char *argv[]) {
     control_port = kTTY3;
     data_port = kTTY4;
   }
+  if (conf.has_control_tty()) {
+    control_port = conf.control_tty().data();
+  }
+  if (conf.has_data_tty()) {
+    data_port = conf.data_tty().data();
+  }
 
   const auto &base_conf = conf.conf().base();
   const auto &base_state = conf.state().base();

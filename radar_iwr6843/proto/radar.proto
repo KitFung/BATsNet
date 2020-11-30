@@ -79,4 +79,6 @@ message DeviceConf {
 
   required string data_collecter_ip = 4;
   required int32 data_collecter_port = 5;
+  optional string control_tty = 6;
+  optional string data_tty = 7;
 }
