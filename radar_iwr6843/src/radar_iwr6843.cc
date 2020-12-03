@@ -98,6 +98,8 @@ int main(int argc, char *argv[]) {
   if (conf.has_data_tty()) {
     data_port = conf.data_tty().data();
   }
+  std::cout << "data_port: " << data_port << std::endl;
+  std::cout << "control_port: " << control_port << std::endl;
 
   const auto &base_conf = conf.conf().base();
   const auto &base_state = conf.state().base();

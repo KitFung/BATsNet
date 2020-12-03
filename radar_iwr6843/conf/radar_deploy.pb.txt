@@ -9,11 +9,11 @@ conf: {
     model: IWR6843
     possible_mode: {
         key: "INDOOR"
-        value: "/opt/aiot/conf/radar/conf/a.cfg"
+        value: "/opt/aiot/conf/radar/cfg/a.cfg"
     }
     possible_mode {
         key: "OUTDOOR"
-        value: "/opt/aiot/conf/radar/conf/a.cfg"
+        value: "/opt/aiot/conf/radar/cfg/a.cfg"
     }
 }
 

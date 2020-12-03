@@ -189,6 +189,7 @@ int Reader_IWR6843::OpenSerial(const char *sock, const speed_t baudrate,
   sleep(2);
   char rts = TIOCM_RTS;
   char dtr = TIOCM_DTR;
+  ioctl(serial_port, TCFLSH, 2);
   ioctl(serial_port, TIOCMBIS, &dtr);
   ioctl(serial_port, TIOCMBIS, &rts);
 
