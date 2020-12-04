@@ -13,15 +13,15 @@ namespace service_discovery {
 
 ServiceNode::ServiceNode(const std::string &identifier, const int remote_port,
                          const int local_port)
-    : identifier_(identifier), broker_port_(remote_port),
+    : identifier_(identifier), service_port_(remote_port),
       local_port_(local_port) {
   etcd_ = std::make_shared<etcd::Client>(ketcd_src);
   local_etcd_ = std::make_shared<etcd::Client>(klocal_etcd_src);
   std::cout << "[ServiceNode] Connected to etcd: " << ketcd_src << std::endl;
-  if (broker_port_ == 0) {
-    val_ = RetreiveBrokerIP() + ":" + std::to_string(RetreiveEnvPort());
+  if (service_port_ == 0) {
+    val_ = RetreiveServiceIP() + ":" + std::to_string(RetreiveEnvPort());
   } else {
-    val_ = RetreiveBrokerIP() + ":" + std::to_string(broker_port_);
+    val_ = RetreiveServiceIP() + ":" + std::to_string(service_port_);
   }
   // Avoid the restart to fast and let register fail
   std::this_thread::sleep_for(std::chrono::seconds(loop_interval_s_ * 4));
@@ -96,7 +96,7 @@ std::string ServiceNode::SendUdp(const std::string &msg) const {
   return std::string(buffer);
 }
 
-std::string ServiceNode::RetreiveBrokerIP() const {
+std::string ServiceNode::RetreiveServiceIP() const {
   std::string msg("GET_IP");
   return SendUdp(msg);
 }

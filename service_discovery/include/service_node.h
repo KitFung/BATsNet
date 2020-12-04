@@ -28,7 +28,7 @@ public:
 private:
   std::string SendUdp(const std::string &msg) const;
   // The IP is the BATs IP, so must get from BATS
-  std::string RetreiveBrokerIP() const;
+  std::string RetreiveServiceIP() const;
   // The MQTT port is seted in GLOBAL ENV, so get from env
   int RetreiveEnvPort() const;
 
@@ -45,7 +45,7 @@ private:
   std::thread inner_loop_;
   std::shared_ptr<etcd::Client> etcd_;
   std::shared_ptr<etcd::Client> local_etcd_;
-  int broker_port_ = 0;
+  int service_port_ = 0;
   int local_port_ = 0;
   int loop_interval_s_ = 2;
   std::atomic<int> registered_ = {0};
