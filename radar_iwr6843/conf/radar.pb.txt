@@ -10,11 +10,16 @@ conf: {
     model: IWR6843
     possible_mode: {
         key: "INDOOR"
-        value: "/home/kit/dev/BATsNet/radar_iwr6843/conf/a.cfg"
+        value: "/opt/aiot/conf/radar/cfg/a.cfg"
     }
     possible_mode {
         key: "OUTDOOR"
-        value: "/home/kit/dev/BATsNet/radar_iwr6843/conf/a.cfg"
+        value: "/opt/aiot/conf/radar/cfg/a.cfg"
+    }
+    # Can remove this mode to disable user cfg
+    possible_mode {
+        key: "USER_DEFINE"
+        value: "/opt/aiot/conf/radar/cfg/user_define.cfg"
     }
 }
 

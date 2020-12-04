@@ -89,6 +89,12 @@ public:
   }
 
 protected:
+  // Require a deamon_ lock before call this
+  void RestartDevice() {
+    deamon_->StopDevice();
+    WriteNewDeviceConf();
+    deamon_->StartDevice();
+  }
   std::unique_ptr<ConfigHandler> &ConfHandler() { return conf_handler_; }
   virtual void BuildHandler() {
     std::cout << "Called base handler" << std::endl;
@@ -116,13 +122,10 @@ private:
     }
     std::lock_guard<std::mutex> lock(deamon_->GetLock());
 
-    deamon_->StopDevice();
     *reply = conf_handler_->UpdateConfig(state_, new_state);
     state_.CopyFrom(reply->last_state());
 
-    WriteNewDeviceConf();
-    deamon_->StartDevice();
-
+    RestartDevice();
     return true;
   }
 

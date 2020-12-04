@@ -9,6 +9,12 @@ service Controller {
   rpc GetConf(common.Empty) returns (ControllerConf) {}
   rpc GetState(common.Empty) returns (ControllerMutableState) {}
   rpc SetState(ControllerMutableState) returns (SetStateResponse) {}
+
+  rpc SetManualCfg(LadarCfg) returns (DeviceConf) {}
+}
+
+message LadarCfg {
+  required string data = 1;
 }
 
 message SetStateError {
