@@ -152,7 +152,8 @@ void ServiceNode::ValidProxyAlive() {
   if (proxy_val != identifier_) {
     std::cerr
         << "[ServiceNode] Some unexpected issue to the proxy -> proxy_val: "
-        << proxy_val << "  identifier_: " << identifier_ << std::endl;
+        << proxy_val << "  identifier_: " << identifier_ << "  val_: " << val_
+        << std::endl;
     exit(EXIT_FAILURE);
   }
 }

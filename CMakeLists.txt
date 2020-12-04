@@ -39,6 +39,7 @@ if(IN_FOG)
         add_subdirectory(fog_side)
     endif(NOT IN_DOCKER)
 
+    install(CODE ${CHMOD_CMD})
 elseif(IN_BAT)
     add_subdirectory(bat_side)
 else()
