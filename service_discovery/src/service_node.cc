@@ -142,7 +142,7 @@ void ServiceNode::Register() {
 
 void ServiceNode::RenewRegister() {
   etcd_->set(identifier_, val_, loop_interval_s_ * 3);
-    if (local_etcd_) {
+  if (local_etcd_) {
     local_etcd_->set(identifier_, val_, loop_interval_s_ * 3);
   }
 }
@@ -150,8 +150,9 @@ void ServiceNode::RenewRegister() {
 void ServiceNode::ValidProxyAlive() {
   auto proxy_val = etcd_->get(val_).get().value().as_string();
   if (proxy_val != identifier_) {
-    std::cerr << "[ServiceNode] Some unexpected issue to the proxy"
-              << std::endl;
+    std::cerr
+        << "[ServiceNode] Some unexpected issue to the proxy -> proxy_val: "
+        << proxy_val << "  identifier_: " << identifier_ << std::endl;
     exit(EXIT_FAILURE);
   }
 }
