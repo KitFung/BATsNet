@@ -7,7 +7,7 @@ import os
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 IP = "192.168.100.3"
-
+BATS_FIP = "10.0.0.100"
 ALLOC_PORT_START = 20000
 ALLOC_PORT_END = 30000
 PROXY_DIR = os.path.join(os.path.dirname(
@@ -43,7 +43,8 @@ def alloc_port(id, fog_ip, fog_port):
         "--env", "ASSIGNED_PORT=%d" % port,
         "--env", "FOG_ADDRESS=%s" % fog_ip,
         "--env", "FOG_PORT=%s" % fog_port,
-        "--env", "FOD_SERVICE_ID=%s" % id,
+        "--env", "FOG_SERVICE_ID=%s" % id,
+        "--env", "BATS_FIP=%s" % BATS_FIP,
         "--env", "EXPECTED_KEY=%s:%s" % (IP, port),
         "-v", "%s:/grpc_proxy" % PROXY_DIR,
         "--name", "envoy_proxy_%d" % port,

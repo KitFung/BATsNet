@@ -9,9 +9,10 @@ REGISTER_SECOND = 30
 
 fog_service_id = sys.argv[1]
 envoy_address_port = sys.argv[2]
+bats_ip=sys.argv[3]
 
 # etcd = etcd3.client(host='0.0.0.0', port=2379)
-etcd = etcd3.client(host='10.0.0.100', port=2379)
+etcd = etcd3.client(host=bats_ip, port=2379)
 start_time = datetime.datetime.now()
 
 while True:
