@@ -23,6 +23,8 @@ bool ServiceHelper::GetAddress(const std::string &identifier,
                                std::string *address, int *port) {
   auto res = etcd_->get(identifier).get();
   if (res.error_code() != 0) {
+    std::cerr << "Error: " << res.error_message() << " while getting address for "
+              << identifier << std::endl;
     return false;
   }
   const auto &val = res.value().as_string();

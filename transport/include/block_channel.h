@@ -98,11 +98,11 @@ private:
                 << std::endl;
       return false;
     }
-    std::cout << "[BlockChannel] MOS Connecting to " << addr_ << " " << port_
-              << std::endl;
+    std::cout << "[BlockChannel] MQTT Client Connecting to " << addr_ << " "
+              << port_ << std::endl;
     connect(addr_.c_str(), port_);
-    std::cout << "[BlockChannel] MOS Connected to " << addr_ << " " << port_
-              << std::endl;
+    std::cout << "[BlockChannel] MQTT Client Connected to " << addr_ << " "
+              << port_ << std::endl;
     loop_start();
     connected_ = true;
 
