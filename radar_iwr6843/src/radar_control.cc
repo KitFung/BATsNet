@@ -28,7 +28,7 @@ Status RadarControl::SetManualCfg(ServerContext *context,
   // Write the request to the cfg file
   const auto possible_mode = conf_.possible_mode();
   bool allow_manual = possible_mode.find(kUserCfgKey) != possible_mode.end();
-  reply->CopyFrom(conf_);
+  reply->CopyFrom(device_conf_);
   if (!allow_manual) {
     return Status::CANCELLED;
   }
