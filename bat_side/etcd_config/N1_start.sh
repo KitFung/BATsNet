@@ -20,7 +20,7 @@ DATA_DIR=etcd-data
 THIS_NAME=${NAME_1}
 THIS_IP=${HOST_1}
 docker run \
-  --rm \
+  --restart \
   -d \
   -p 2379:2379 \
   -p 2380:2380 \
