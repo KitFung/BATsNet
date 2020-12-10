@@ -15,6 +15,7 @@ message BasicConf {
   repeated string service_argv = 6;
 
   optional string control_service_port = 7;
+  optional bool access_control = 8 [default=false];
 }
 
 message BasicMutableState {
