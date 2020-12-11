@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: acl-proxy-daemonset
+  namespace: testbed-system
+spec:
+  selector:
+    matchLabels:
+      name: acl-proxy-ds
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ""
+      labels:
+        name: acl-proxy-ds
+    spec:
+      serviceAccountName: "acl-ac"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: dedicated
+                operator: NotIn
+                values:
+                  - "master"
+      tolerations:
+      - key: CriticalAddonsOnly
+        operator: Exists
+      - key: "node-role.kubernetes.io/master"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+      priorityClassName: "system-node-critical"
+      hostNetwork: true
+      containers:
+      - image: 137.189.97.26:5000/acl_proxy:v0.0.1
+        name: acl-proxy-ctr
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+        env:
+        - name: NODE_IP
+          value: "127.0.0.1"
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName

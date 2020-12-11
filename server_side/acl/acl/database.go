@@ -28,6 +28,7 @@ var once sync.Once
 func GetAclDB() *AclDB {
 	once.Do(func() {
 		aclDB = NewAclDb()
+		aclDB.InitialDB()
 	})
 	return aclDB
 }
@@ -71,14 +72,14 @@ func (m *AclDB) CheckPodAlive(podName string, podID string) bool {
 }
 
 func (m *AclDB) MonopolizeService(serviceName string, podName string, podID string) bool {
-	stmt, err := m.db.Prepare("SELECT podName, podID FROM acl where service = ?")
+	stmt, err := m.db.Prepare("SELECT podName, podID FROM acl where serviceName = ?")
 	check(err)
 	var oldPodName string
 	var oldPodID string
 	err = stmt.QueryRow(serviceName).Scan(&oldPodName, &oldPodID)
 	if err == sql.ErrNoRows {
 		// INSERT
-		stmt, err = m.db.Prepare("INSERT INTO acl(service, podName, podID) VALUES(?, ?, ?)")
+		stmt, err = m.db.Prepare("INSERT INTO acl(serviceName, podName, podID) VALUES(?, ?, ?)")
 		check(err)
 		_, err = stmt.Exec(serviceName, podName, podID)
 		check(err)
@@ -93,7 +94,7 @@ func (m *AclDB) MonopolizeService(serviceName string, podName string, podID stri
 		return false
 	} else {
 		// UPDATE
-		stmt, err = m.db.Prepare("UPDATE acl set podName=?, podID=? where service=?")
+		stmt, err = m.db.Prepare("UPDATE acl set podName=?, podID=? where serviceName=?")
 		check(err)
 		_, err = stmt.Exec(podName, podID, serviceName)
 		check(err)
