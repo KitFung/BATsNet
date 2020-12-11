@@ -1,7 +1,10 @@
 package main
 
 import (
+	"context"
 	"database/sql"
+	"sync"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 
@@ -11,12 +14,22 @@ import (
 )
 
 const kDB_TYPE = "sqlite3"
-const kDefault_DB_PATH = "/db/acl.db"
+const kDefault_DB_PATH = "/opt/acl/acl.db"
 const TBAppsNamespace = "testbed-apps"
 
 type AclDB struct {
 	db        *sql.DB
 	k8sClient *kubernetes.Clientset
+}
+
+var aclDB *AclDB
+var once sync.Once
+
+func GetAclDB() *AclDB {
+	once.Do(func() {
+		aclDB = NewAclDb()
+	})
+	return aclDB
 }
 
 func NewAclDb() *AclDB {
@@ -50,7 +63,9 @@ func (m *AclDB) InitialDB() {
 }
 
 func (m *AclDB) CheckPodAlive(podName string, podID string) bool {
-	pod, err := m.k8sClient.CoreV1().Pods(TBAppsNamespace).Get(podName, metav1.GetOptions{})
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	pod, err := m.k8sClient.CoreV1().Pods(TBAppsNamespace).Get(ctx, podName, metav1.GetOptions{})
 	check(err)
 	return string(pod.GetUID()) == podID
 }
@@ -70,6 +85,10 @@ func (m *AclDB) MonopolizeService(serviceName string, podName string, podID stri
 		return true
 	}
 	check(err)
+	if oldPodName == podName && podID == oldPodID {
+		return true
+	}
+
 	if m.CheckPodAlive(oldPodName, oldPodID) {
 		return false
 	} else {
