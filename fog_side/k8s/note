@@ -13,6 +13,9 @@ kubeadm join 137.189.97.26:6443 --token ncznyw.xafjdkndvkhlsg6t \
     --discovery-token-ca-cert-hash sha256:8f98d1747041c75706f0a3af3bce172f048d166b1a94ac7c8bd62315910f5d95 \
     --node-name node1
 
+sudo kubeadm join 137.189.97.26:6443 --token rznut8.9b3snuw6ctgabfr0 \
+    --discovery-token-ca-cert-hash sha256:8f98d1747041c75706f0a3af3bce172f048d166b1a94ac7c8bd62315910f5d95 \
+    --node-name node-test
 kubectl taint nodes --all node-role.kubernetes.io/master-
 
 kubectl apply -f https://github.com/coreos/flannel/raw/master/Documentation/kube-flannel.yml

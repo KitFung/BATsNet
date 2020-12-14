@@ -10,9 +10,9 @@ import (
 )
 
 type ServieRequest struct {
-	serviceName string
-	podName     string
-	podID       string
+	ServiceName string
+	PodName     string
+	PodID       string
 }
 
 func service(w http.ResponseWriter, r *http.Request) {
@@ -25,8 +25,8 @@ func service(w http.ResponseWriter, r *http.Request) {
 		err = json.NewEncoder(w).Encode(err)
 		check(err)
 	}
-	fmt.Printf("Receive Request for %s\n", service.serviceName)
-	success := GetAclDB().MonopolizeService(service.serviceName, service.podName, service.podID)
+	fmt.Printf("Receive Request for %+v\n", service)
+	success := GetAclDB().MonopolizeService(service.ServiceName, service.PodName, service.PodID)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	if success {
 		w.WriteHeader(http.StatusAccepted)

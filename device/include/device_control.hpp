@@ -16,6 +16,11 @@ using grpc::Status;
 
 namespace device {
 
+#define ACL_VERIFICATION                                                       \
+  if (!AclVerify()) {                                                          \
+    return Status::CANCELLED;                                                  \
+  }
+
 template <typename DConfT, typename ConfT, typename StateT,
           typename SetStateResT, typename ServiceT>
 class BaseControl : public ServiceT {
@@ -70,6 +75,8 @@ public:
 
   Status SetState(ServerContext *context, const StateT *request,
                   SetStateResT *reply) override {
+    ACL_VERIFICATION
+
     if (!state_mtx_.try_lock()) {
       return Status(grpc::StatusCode::UNAVAILABLE,
                     "State of device is updating. Please wait a minutes");
@@ -99,6 +106,8 @@ protected:
   virtual void BuildHandler() {
     std::cout << "Called base handler" << std::endl;
   }
+  bool AclVerify() const { return false; }
+
   ConfT conf_;
   StateT state_;
   DConfT device_conf_;

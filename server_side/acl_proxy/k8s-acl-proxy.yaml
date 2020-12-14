@@ -37,15 +37,14 @@ spec:
       hostNetwork: true
       containers:
       - image: 137.189.97.26:5000/acl_proxy:v0.0.1
+        imagePullPolicy: Always
         name: acl-proxy-ctr
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
             drop: ["ALL"]
         env:
-        - name: NODE_IP
-          value: "127.0.0.1"
-        - name: NODE_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: spec.nodeName
+        - name: ACL_ADDRESS
+          value: "acl-service"
+        - name: ACL_PORT
+          value: "8080"

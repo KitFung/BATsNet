@@ -5,6 +5,12 @@ package common;
 message Empty {
 }
 
+message TaskSecret {
+  // task = pod. Assume only the task itself know its pod id.
+  optional string task_name = 1;
+  optional string task_id = 2;
+}
+
 message BasicConf {
   required string controller_identifier = 1;
   required string identifier = 2;

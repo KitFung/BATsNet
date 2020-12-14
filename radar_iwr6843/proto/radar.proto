@@ -5,17 +5,16 @@ import "common.proto";
 package radar;
 
 service Controller {
-  rpc GetInitDeviceConf(common.Empty) returns (DeviceConf) {}
-  rpc GetConf(common.Empty) returns (ControllerConf) {}
-  rpc GetState(common.Empty) returns (ControllerMutableState) {}
-  rpc SetState(ControllerMutableState) returns (SetStateResponse) {}
+  rpc GetInitDeviceConf(common.Empty) returns(DeviceConf) {}
+  rpc GetConf(common.Empty) returns(ControllerConf) {}
+  rpc FillSecret(common.TaskSecret) returns(common.Empty) {}
+  rpc GetState(common.Empty) returns(ControllerMutableState) {}
+  rpc SetState(ControllerMutableState) returns(SetStateResponse) {}
 
-  rpc SetManualCfg(LadarCfg) returns (DeviceConf) {}
+  rpc SetManualCfg(LadarCfg) returns(DeviceConf) {}
 }
 
-message LadarCfg {
-  required string data = 1;
-}
+message LadarCfg { required string data = 1; }
 
 message SetStateError {
   enum ErrorType { NOT_SUPPORT = 1; }
@@ -81,7 +80,7 @@ message DeviceConf {
   required ControllerConf conf = 1;
   required ControllerMutableState state = 2;
 
-  optional bool read_parsed = 3 [ default = false ];
+  optional bool read_parsed = 3 [default = false];
 
   required string data_collecter_ip = 4;
   required int32 data_collecter_port = 5;
