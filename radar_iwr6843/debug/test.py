@@ -7,6 +7,10 @@ import radar_pb2_grpc
 
 def run():
     channel = grpc.insecure_channel('localhost:50051')
+    secret = common_pb2.TaskSecret(
+        task_name='radar_task', task_id='radar_task_id'
+    )
+    metadata = (('task-secret-bin', secret), )
     stub = radar_pb2_grpc.ControllerStub(channel)
     msg = common_pb2.Empty()
     print("-----------Get Conf----------")
@@ -20,8 +24,9 @@ def run():
     # res = stub.SetState(state)
     # print(res)
     print("-----------SHARING----------")
+    print(metadata)
     state.base.mode = common_pb2.BasicMutableState.Mode.Value('SHARING')
-    res = stub.SetState(state)
+    res = stub.SetState(state, metadata=metadata)
     print(res)
 
     print("-----------LocalSaving----------")

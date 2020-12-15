@@ -222,6 +222,8 @@ In each sensor directory, edit the `xxx_deployer.pb.txt` according to the expect
 ```
 cd build
 sudo make install
+# to avoid permission issue
+sudo chmod -R 777 /opt/aiot
 ```
 
 ## Step 10: Enable the environemt variable

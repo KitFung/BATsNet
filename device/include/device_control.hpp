@@ -16,7 +16,7 @@ using grpc::Status;
 
 namespace device {
 
-const char kMetaKeyTaskSecret[] = "TaskSecret-bin";
+const char kMetaKeyTaskSecret[] = "task-secret-bin";
 
 #define ACL_VERIFICATION(ctx)                                                  \
   if (!AclVerify(ctx)) {                                                       \
