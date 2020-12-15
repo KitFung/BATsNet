@@ -7,7 +7,6 @@ package radar;
 service Controller {
   rpc GetInitDeviceConf(common.Empty) returns(DeviceConf) {}
   rpc GetConf(common.Empty) returns(ControllerConf) {}
-  rpc FillSecret(common.TaskSecret) returns(common.Empty) {}
   rpc GetState(common.Empty) returns(ControllerMutableState) {}
   rpc SetState(ControllerMutableState) returns(SetStateResponse) {}
 

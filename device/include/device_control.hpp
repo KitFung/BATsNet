@@ -16,8 +16,10 @@ using grpc::Status;
 
 namespace device {
 
-#define ACL_VERIFICATION                                                       \
-  if (!AclVerify()) {                                                          \
+const char kMetaKeyTaskSecret[] = "TaskSecret-bin";
+
+#define ACL_VERIFICATION(ctx)                                                  \
+  if (!AclVerify(ctx)) {                                                       \
     return Status::CANCELLED;                                                  \
   }
 
@@ -75,7 +77,7 @@ public:
 
   Status SetState(ServerContext *context, const StateT *request,
                   SetStateResT *reply) override {
-    ACL_VERIFICATION
+    ACL_VERIFICATION(context)
 
     if (!state_mtx_.try_lock()) {
       return Status(grpc::StatusCode::UNAVAILABLE,
@@ -106,7 +108,21 @@ protected:
   virtual void BuildHandler() {
     std::cout << "Called base handler" << std::endl;
   }
-  bool AclVerify() const { return false; }
+  bool AclVerify(const ServerContext *context) const {
+    const auto &meta_dat = context->client_metadata();
+    auto task_secret_itr = meta_dat.equal_range(kMetaKeyTaskSecret);
+    for (auto itr = task_secret_itr.first; itr != task_secret_itr.second;
+         ++itr) {
+      common::TaskSecret secret;
+      secret.ParseFromArray(itr->second.data(), itr->second.size());
+      std::cout << "===================== META:" << std::endl;
+      std::cout << secret.DebugString() << std::endl;
+      // if (XXX) {
+      //   return true;
+      // }
+    }
+    return false;
+  }
 
   ConfT conf_;
   StateT state_;
