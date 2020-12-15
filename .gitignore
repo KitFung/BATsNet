@@ -4,6 +4,7 @@ data
 *.pb.cc
 *_pb2.py
 *_pb2_grpc.py
+__pycache__/
 
 .vscode
 # Prerequisites
