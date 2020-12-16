@@ -10,7 +10,7 @@ def run():
     secret = common_pb2.TaskSecret(
         task_name='radar_task', task_id='radar_task_id'
     )
-    metadata = (('task-secret-bin', secret), )
+    metadata = (('task-secret-bin', secret.SerializeToString()), )
     stub = radar_pb2_grpc.ControllerStub(channel)
     msg = common_pb2.Empty()
     print("-----------Get Conf----------")

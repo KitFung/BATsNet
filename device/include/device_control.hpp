@@ -4,6 +4,8 @@
 #include <memory>
 #include <mutex>
 
+#include <cpprest/filestream.h>
+#include <cpprest/http_client.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/text_format.h>
 #include <grpcpp/grpcpp.h>
@@ -17,10 +19,13 @@ using grpc::Status;
 namespace device {
 
 const char kMetaKeyTaskSecret[] = "task-secret-bin";
+const char kAclEnvKey[] = "ACL_SERVER";
+const char kAclServer[] = "http://137.189.97.26:30777";
 
 #define ACL_VERIFICATION(ctx)                                                  \
   if (!AclVerify(ctx)) {                                                       \
-    return Status::CANCELLED;                                                  \
+    return Status(grpc::StatusCode::PERMISSION_DENIED,                         \
+                  "The task secret in metadata cannot pass the acl");          \
   }
 
 template <typename DConfT, typename ConfT, typename StateT,
@@ -117,6 +122,22 @@ protected:
       secret.ParseFromArray(itr->second.data(), itr->second.size());
       std::cout << "===================== META:" << std::endl;
       std::cout << secret.DebugString() << std::endl;
+
+      std::string acl_server_url(kAclServer);
+      if (const char *env_acl_server = std::getenv(kAclEnvKey)) {
+        acl_server_url = env_acl_server;
+      }
+
+      web::json::value obj;
+      // Use identifier instead of controller_identifier is better
+      // Since the user may not know the controller_identifier.
+      obj[U("ServiceName")] = web::json::value::string(U(conf_.base().identifier()));
+      obj[U("PodName")] = web::json::value::string(U(secret.task_name()));
+      obj[U("PodID")] = web::json::value::string(U(secret.task_id()));
+
+      web::http::client::http_client client(acl_server_url);
+      auto resp = client.request(web::http::methods::POST, U("/"), obj);
+      std::cout << resp.get().extract_json().get() << std::endl;
       // if (XXX) {
       //   return true;
       // }
