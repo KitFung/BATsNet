@@ -5,7 +5,7 @@ service vpn_tunnel restart
 sleep 10
 
 cd /opt/aiot/buf
-TIMESTAMP=$(date '+%Y-%M-%d-%H-%M-%S')
+TIMESTAMP=$(date '+%Y-%m-%d-%H-%M-%S')
 TAR_FILE=${NODE_NAME}-${TIMESTAMP}.tar
 
 tar -cvf $TAR_FILE --remove-files */*

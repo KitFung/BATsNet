@@ -131,16 +131,16 @@ protected:
       web::json::value obj;
       // Use identifier instead of controller_identifier is better
       // Since the user may not know the controller_identifier.
-      obj[U("ServiceName")] = web::json::value::string(U(conf_.base().identifier()));
+      obj[U("ServiceName")] =
+          web::json::value::string(U(conf_.base().identifier()));
       obj[U("PodName")] = web::json::value::string(U(secret.task_name()));
       obj[U("PodID")] = web::json::value::string(U(secret.task_id()));
 
       web::http::client::http_client client(acl_server_url);
       auto resp = client.request(web::http::methods::POST, U("/"), obj);
-      std::cout << resp.get().extract_json().get() << std::endl;
-      // if (XXX) {
-      //   return true;
-      // }
+      if (resp.get().status_code() == web::http::status_codes::Accepted) {
+        return true;
+      }
     }
     return false;
   }
