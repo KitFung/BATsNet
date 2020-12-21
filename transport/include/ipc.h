@@ -8,16 +8,20 @@
 
 #include "transport/include/transport.h"
 
-// The broadcast function in cpp-ipc library have bug, cannot work properly
-// after the queue is full. So only use it unicast now
+/**
+ *  The broadcast function in cpp-ipc library have bug, cannot work properly
+ *  after the queue is full. So only use it unicast now
+ */
 using ipctype = ipc::chan<
     ipc::wr<ipc::relat::single, ipc::relat::single, ipc::trans::unicast>>;
-
 // using ipctype = ipc::chan<
 //     ipc::wr<ipc::relat::single, ipc::relat::multi, ipc::trans::broadcast>>;
 
 namespace transport {
 
+/**
+ * Parse POD datatype
+ */
 template <typename T, typename std::enable_if<std::is_pod<T>::value, void>::type
                           * = nullptr>
 bool ParseRecvData(const ipc::buff_t &buf_data, T *data) {
@@ -25,6 +29,9 @@ bool ParseRecvData(const ipc::buff_t &buf_data, T *data) {
   return true;
 }
 
+/**
+ * Parse protobuf datatype
+ */
 template <typename T,
           typename std::enable_if<!std::is_pod<T>::value &&
                                       std::is_member_function_pointer<decltype(
@@ -36,6 +43,10 @@ bool ParseRecvData(const ipc::buff_t &buf_data, T *data) {
   return true;
 }
 
+
+/**
+ * Parse string datatype
+ */
 inline bool ParseRecvData(const ipc::buff_t &buf_data, std::string *data) {
   *data = std::string(reinterpret_cast<const char *>(buf_data.data()),
                       buf_data.size());

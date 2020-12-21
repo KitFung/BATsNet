@@ -14,6 +14,9 @@
 
 namespace transport {
 
+/**
+ * Parse POD datatype
+ */
 template <typename T, typename std::enable_if<std::is_pod<T>::value, void>::type
                           * = nullptr>
 bool ParseRecvData(const mosquitto_message *message, T *data) {
@@ -21,6 +24,9 @@ bool ParseRecvData(const mosquitto_message *message, T *data) {
   return true;
 }
 
+/**
+ * Parse protobuf datatype
+ */
 template <typename T,
           typename std::enable_if<!std::is_pod<T>::value &&
                                       std::is_member_function_pointer<decltype(
@@ -32,12 +38,23 @@ bool ParseRecvData(const mosquitto_message *message, T *data) {
   return true;
 }
 
+/**
+ * Parse string datatype
+ */
 inline bool ParseRecvData(const mosquitto_message *message, std::string *data) {
   *data = std::string(reinterpret_cast<const char *>(message->payload),
                       message->payloadlen);
   return true;
 }
 
+/**
+ * BlockChannel hidden all the detail of using MQTT to tranfer data to the MQTT
+ * broker
+ * The MQTT broker address is get by accessing the etcd from the BAT.
+ * The lifetime of the BlockChannel will try to ensure the data channel is still
+ * alive client and the broker alive.
+ * Not thread safe
+ */
 template <typename T>
 class BlockChannel : public Transport<T>, public mosqpp::mosquittopp {
 public:
@@ -87,6 +104,8 @@ private:
     if (!connected_) {
       InitMos();
     }
+    // 0 = at most 1, 1 = at least 1, 2 = exact 1
+    // Can modify 2 to 0 for less latency
     int ret = publish(NULL, channel_.c_str(), len, data, 2, false);
     return (ret == MOSQ_ERR_SUCCESS);
   }

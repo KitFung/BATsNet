@@ -21,6 +21,7 @@ ServiceNode::ServiceNode(const std::string &identifier, const int remote_port,
   if (service_port_ == 0) {
     val_ = RetreiveServiceIP() + ":" + std::to_string(RetreiveEnvPort());
   } else {
+    // Assume the bats side already setu port forward to this specific port
     val_ = RetreiveServiceIP() + ":" + std::to_string(service_port_);
   }
   // Avoid the restart to fast and let register fail
@@ -103,11 +104,13 @@ std::string ServiceNode::RetreiveServiceIP() const {
 
 int ServiceNode::RetreiveEnvPort() const {
   if (local_port_ == 0) {
-    // Don't the remote side setup proxy
-    if (const char *port = std::getenv("SERVICE_BROKER_PORT")) {
-      int p = std::atoi(port);
-      return p;
-    }
+    //   // Don't the remote side setup proxy
+    //   if (const char *port = std::getenv("SERVICE_BROKER_PORT")) {
+    //     int p = std::atoi(port);
+    //     return p;
+    //   }
+
+    // the port of MQTT broker
     return 1883;
   } else {
     // Require the remote side setup proxy

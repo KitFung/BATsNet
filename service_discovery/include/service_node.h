@@ -17,7 +17,9 @@ namespace service_discovery {
 class ServiceNode {
 public:
   // If local port is zero, it mean the service is accessable in remote directly
-  // Otherwise, it mean it need the remote to proxy the packet to local port
+  // through MQTT
+  // Otherwise, it mean it need the remote to proxy the packet to
+  // local port
   ServiceNode(const std::string &identifier, const int remote_port = 0,
               const int local_port = 0);
 
