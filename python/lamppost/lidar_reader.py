@@ -17,8 +17,11 @@ def GetConf(channel):
     return res
 
 
-# The user need to provide it own calibration file
-# Or we could provide a api for it to get a recommended calibration file
+"""
+CURRENTLY ONLY SUPPORT VELODYNE
+The user need to provide it own calibration file
+Or we could provide a api for it to get a recommended calibration file
+"""
 class LidarReader(DataReader):
     def __init__(self, data_identifier, calibration_file='', max_range=130.0, min_range=0.4):
         # calibration_file = "/home/kit/dev/BATsNet/lidar/lib/velodyne/velodyne_pointcloud/params/VLP16db.yaml"
@@ -39,6 +42,10 @@ class LidarReader(DataReader):
 
     def read(self):
         return self.reader.recv()
-# from lamppost.lidar_reader import LidarReader
-# id = '/lidar/velodyne/scan/1/lab/test1'
-# r = LidarReader(id)
+
+# if __name__ == '__main___':
+#     from lamppost.lidar_reader import LidarReader
+#     id = '/lidar/velodyne/scan/1/lab/test1'
+#     r = LidarReader(id)
+#     for data in r.read():
+#         print(data)

@@ -12,14 +12,10 @@ tar -cvf $TAR_FILE --remove-files */*
 
 rsync -avzh -e 'ssh -p 2202' \
     $TAR_FILE testbed@137.189.97.26:/home/testbed/lamppost_data_backup
+rm -rf $TAR_FILE
 
-
-# #### This is much slower
-# # rsync --dry-run \
 # rsync \
 #     --remove-source-files \
 #     -avzh -e 'ssh -p 2202' \
-#     ./*/* testbed@137.189.97.26:/home/testbed/lamppost_data_backup
+#     ./*.tar testbed@137.189.97.26:/home/testbed/lamppost_data_backup
 
-
-rm -rf $TAR_FILE

@@ -28,8 +28,6 @@ void LocalSaving(velodyne_driver::VelodyneDriver *driver,
   velodyne::VelodyneScan scan;
   while (true) {
     bool polled_ = driver->poll(&scan);
-    // std::cout << "Polled" << std::endl;
-
     if (!polled_) {
       std::cerr << "Velodyne - Failed to poll device." << std::endl;
     } else {
@@ -46,8 +44,6 @@ void Sharing(velodyne_driver::VelodyneDriver *driver,
   velodyne::VelodyneScan scan;
   while (true) {
     bool polled_ = driver->poll(&scan);
-    // std::cout << "Polled" << std::endl;
-
     if (!polled_) {
       std::cerr << "Velodyne - Failed to poll device." << std::endl;
     } else {
@@ -56,6 +52,9 @@ void Sharing(velodyne_driver::VelodyneDriver *driver,
   }
 }
 
+/**
+ * The IPC method is not stable enough, so not used right now
+ */
 void IPCSending(velodyne_driver::VelodyneDriver *driver,
                 const lidar::DeviceConf &conf) {
   auto out_topic = conf.rslidar_conf().ipc_topic_name();
@@ -65,7 +64,6 @@ void IPCSending(velodyne_driver::VelodyneDriver *driver,
   velodyne::VelodyneScan scan;
   while (true) {
     bool polled_ = driver->poll(&scan);
-    // std::cout << "poll" << std::endl;
     if (!polled_) {
       std::cerr << "Velodyne - Failed to poll device." << std::endl;
     } else {

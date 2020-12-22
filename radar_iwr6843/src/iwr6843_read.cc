@@ -6,7 +6,7 @@
 
 namespace radar {
 
-// const uint16_t kMagicWord[4] = {0x0102, 0x0304, 0x0506, 0x0708};
+// A magic word that used to found the front of a message
 const char kMagicWord[8] = {0x02, 0x01, 0x04, 0x03, 0x06, 0x05, 0x08, 0x07};
 
 double NowSec() {
@@ -20,6 +20,9 @@ Reader_IWR6843::Reader_IWR6843(const char *cli_sock, const speed_t cli_baudrate,
                                const char *data_sock,
                                const speed_t data_baudrate) {
   static_assert(sizeof(float) == 4, "Size incorrect for float");
+  /**
+   * The iwr6843 using two serial port. 1 for data transfer, 1 for control purpose 
+   */
   cli_fd_ = OpenSerial(cli_sock, cli_baudrate, &cli_tty_);
   data_fd_ = OpenSerial(data_sock, data_baudrate, &data_tty_);
 
@@ -107,14 +110,13 @@ bool Reader_IWR6843::ReadParsedRadarResult(RadarResult *result) {
   int m = hdr->numDetectedObj;
   result->mutable_object()->Reserve(m);
   int ridx = sizeof(MmwDemo_output_message_header);
+  // Reading message from buf
   for (int i = 0; i < n; ++i) {
     TypeNLen *t = reinterpret_cast<TypeNLen *>(acum_buf + ridx);
     ridx += sizeof(TypeNLen);
     if (t->tly_type == 1) {
       for (int j = 0; j < m; ++j) {
         TlvObject *obj = reinterpret_cast<TlvObject *>(acum_buf + ridx);
-        // std::cout << "obj: " << obj->x << " " << obj->y << " " << obj->z
-        //           << std::endl;
         auto ptr = result->add_object();
         ptr->set_x(obj->x);
         ptr->set_y(obj->y);
@@ -122,13 +124,13 @@ bool Reader_IWR6843::ReadParsedRadarResult(RadarResult *result) {
         ptr->set_vel(obj->vel);
         ridx += sizeof(TlvObject);
       }
-      // Only need obj right now
       break;
     } else {
       ridx += t->tly_len;
     }
   }
   acum_len -= total_len;
+  // Remove the readed data from buffer
   if (acum_len > 0) {
     memmove(acum_buf, acum_buf + total_len, acum_len);
   }
@@ -170,10 +172,6 @@ int Reader_IWR6843::OpenSerial(const char *sock, const speed_t baudrate,
                           // (e.g. newline chars)
   tty->c_oflag &=
       ~ONLCR; // Prevent conversion of newline to carriage return/line feed
-  // tty.c_oflag &= ~OXTABS; // Prevent conversion of tabs to spaces (NOT
-  // PRESENT ON LINUX)
-  // tty.c_oflag &= ~ONOEOT; // Prevent removal of C-d chars
-  // (0x004) in output (NOT PRESENT ON LINUX)
 
   tty->c_cc[VTIME] = 10; // Wait for up to 1s (10 deciseconds), returning as
                          // soon as any data is received.
@@ -193,6 +191,7 @@ int Reader_IWR6843::OpenSerial(const char *sock, const speed_t baudrate,
   ioctl(serial_port, TIOCMBIS, &dtr);
   ioctl(serial_port, TIOCMBIS, &rts);
 
+  // Trying to clean the buffer in the serial channel
   if (tcflush(serial_port, TCIOFLUSH) != 0) {
     printf("Error %i from tcflush: %s\n", errno, strerror(errno));
     exit(1);

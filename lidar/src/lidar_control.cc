@@ -13,9 +13,10 @@ void LidarControl::BuildHandler() {
   auto model = conf_.model();
   switch (model) {
   case LidarModel::VELODYNE:
-    // ConfHandler().reset(new IWR68943ConfigHandler());
+    ConfHandler().reset(new VelodyneConfigHandler());
     break;
   case LidarModel::RSLIDAR:
+    ConfHandler().reset(new RslidarConfigHandler());
     break;
   default:
     exit(EXIT_FAILURE);

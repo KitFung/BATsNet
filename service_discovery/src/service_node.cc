@@ -24,7 +24,7 @@ ServiceNode::ServiceNode(const std::string &identifier, const int remote_port,
     // Assume the bats side already setu port forward to this specific port
     val_ = RetreiveServiceIP() + ":" + std::to_string(service_port_);
   }
-  // Avoid the restart to fast and let register fail
+  // Avoid the restart too fast and let register fail
   std::this_thread::sleep_for(std::chrono::seconds(loop_interval_s_ * 4));
   inner_loop_ = std::thread([&] { InnerLoop(); });
   // Just a interval to it register
