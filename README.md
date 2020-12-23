@@ -1,3 +1,18 @@
+# BATsNet
+
+The codebase of the smart lamppost system.
+
+Used in the BAT side: `bat_side`
+
+Used in the server side: `server_side`
+
+Provide the underlying function and interface in fog side: `common`, `data_collector`, `device`, `python`, `scheduler`, `transport`, `service_discovery`
+
+Related to the sensor: `camera`, `radar_iwr6843`, `lidar`
+
+Used in fog side, but not used by the user task or sensor: `fog_size`
+
+# Download this library
 ```
 git clone --recurse-submodules -j8 git://github.com/KitFung/BATsNet
 ```
