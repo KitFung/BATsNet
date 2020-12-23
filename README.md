@@ -17,6 +17,16 @@ Used in fog side, but not used by the user task or sensor: `fog_size`
 git clone --recurse-submodules -j8 git://github.com/KitFung/BATsNet
 ```
 
+# Build
+
+```
+mkdir build
+cd build
+cmake -DIN_FOG=ON ..
+make -j4
+sudo make install
+```
+
 ## Dependency
 ----
 
