@@ -11,6 +11,9 @@ namespace data_collector {
 constexpr char kBufFolder[] = "/opt/aiot/buf";
 constexpr char kBufTmpFolder[] = "/opt/aiot/bufTmp";
 
+/**
+ * Lock a folder and avoid multiple operation on the folder
+ */
 class BufFolderLock {
 public:
   BufFolderLock(const std::string &folder);
@@ -20,6 +23,14 @@ private:
   int fd_ = 0;
 };
 
+
+/**
+ * The buf format: |msg_size: 32 bit|msg : msg_size bit|.....|msg_size: 32 bit|msg : msg_size bit|
+ */
+
+/**
+ * Write the data in to gz file 
+ */
 class BufWriter {
 public:
   BufWriter(const std::string &topic);
@@ -33,6 +44,9 @@ private:
   gzFile f_;
 };
 
+/**
+ * Read the data from gz file 
+ */
 class BufReader {
 public:
   BufReader(const std::string &file);
