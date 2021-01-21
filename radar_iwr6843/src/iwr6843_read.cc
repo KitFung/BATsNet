@@ -23,6 +23,13 @@ Reader_IWR6843::Reader_IWR6843(const char *cli_sock, const speed_t cli_baudrate,
   /**
    * The iwr6843 using two serial port. 1 for data transfer, 1 for control purpose 
    */
+
+  // Reset the connection
+  cli_fd_ = OpenSerial(cli_sock, cli_baudrate, &cli_tty_);
+  char stop_cmd[] = "sensorStop\n";
+  WriteToSerial(cli_fd_, stop_cmd, sizeof(stop_cmd));
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
   cli_fd_ = OpenSerial(cli_sock, cli_baudrate, &cli_tty_);
   data_fd_ = OpenSerial(data_sock, data_baudrate, &data_tty_);
 
