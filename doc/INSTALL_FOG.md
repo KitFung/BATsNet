@@ -191,6 +191,8 @@ pushd build
 cmake -DIN_FOG=ON ..
 make -j4
 popd
+
+sudo usermod -a -G dialout nvidia
 ```
 
 ## Step 6: Install the python library
