@@ -249,7 +249,7 @@ pushd openconnect-8.10
 ./configure
 make -j8
 sudo make install
-sudo pip3 install netifaces
+sudo pip3 install netifaces etcd3
 sudo ldconfig
 
 ## First check whether the vpn work regularly
