@@ -204,7 +204,11 @@ sudo pip3 install setuptools
 bash prepare.sh
 python3 setup.py build
 sudo pip3 install --upgrade cython
+
 pip3 install --user .
+
+sudo -i
+pip3 install .
 ```
 
 ## Step 7: Setup the environment variable
@@ -236,6 +240,17 @@ source /etc/profile.d/fog_env.sh
 ```
 
 ## Step 11: Start the service for the sensor
+
+First setup the nameserver
+```
+sudo vim /etc/resolvconf/resolv.conf.d/head
+```
+
+Then add following line
+```
+nameserver 8.8.8.8 
+nameserver 8.8.4.4
+```
 
 Need to install the newest openconnect
 The apt provided version is too old. Need compile from source
