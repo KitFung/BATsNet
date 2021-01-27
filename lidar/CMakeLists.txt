@@ -56,6 +56,7 @@ if(INSTALL_DRIVER)
 
     install(TARGETS rslidar DESTINATION ${BATSNET_BIN_INSTALL_DIR})
     install(TARGETS velodyne DESTINATION ${BATSNET_BIN_INSTALL_DIR})
+    install(TARGETS livox DESTINATION ${BATSNET_BIN_INSTALL_DIR})
     install(TARGETS lidar_controller DESTINATION ${BATSNET_BIN_INSTALL_DIR})
 
     install(FILES systemd/lidar.service DESTINATION /etc/systemd/system)

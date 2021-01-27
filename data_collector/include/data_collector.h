@@ -25,6 +25,7 @@ struct DataCollectParams {
 
 class DataCollector : public mosqpp::mosquittopp {
 public:
+  DataCollector();
   DataCollector(const char *host, const int port,
                 DataCollectParams *params = nullptr);
   ~DataCollector();

@@ -2,22 +2,23 @@
 
 #include <iostream>
 namespace data_collector {
+DataCollector::DataCollector() {}
 DataCollector::DataCollector(const char *host, int port,
                              DataCollectParams *params) {
-  mosqpp::lib_init();
-  if (params != nullptr) {
-    params_ = *params;
-  }
-  host_ = std::string(host);
-  port_ = port;
+  // mosqpp::lib_init();
+  // if (params != nullptr) {
+  //   params_ = *params;
+  // }
+  // host_ = std::string(host);
+  // port_ = port;
 
-  connect_async(host, port, params_.keep_alive);
-  loop_start();
+  // connect_async(host, port, params_.keep_alive);
+  // loop_start();
 }
 
 DataCollector::~DataCollector() {
-  loop_stop(true);
-  mosqpp::lib_cleanup();
+  // loop_stop(true);
+  // mosqpp::lib_cleanup();
 }
 
 bool DataCollector::SendData(const char *topic, const char *data) {
@@ -27,8 +28,9 @@ bool DataCollector::SendData(const char *topic, const char *data) {
 bool DataCollector::SendData(const char *topic, const char *data,
                              const int len) {
   if (params_.mode == CollectMode::REAL_TIME_UPLOAD) {
-    int ret = publish(NULL, topic, len, data, params_.qos, false);
-    return (ret == MOSQ_ERR_SUCCESS);
+    // int ret = publish(NULL, topic, len, data, params_.qos, false);
+    // return (ret == MOSQ_ERR_SUCCESS);
+    return true;
   } else {
     if (buf_cnt_[topic] % 1000 == 0) {
       writer_[topic].reset(new BufWriter(topic));
