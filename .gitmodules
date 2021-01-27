@@ -1,3 +1,6 @@
 [submodule "third_party/etcd-cpp-apiv3"]
 	path = third_party/etcd-cpp-apiv3
 	url = https://github.com/KitFung/etcd-cpp-apiv3.git
+[submodule "third_party/Livox-SDK"]
+	path = third_party/Livox-SDK
+	url = git@github.com:KitFung/Livox-SDK.git

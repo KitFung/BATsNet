@@ -1,5 +1,6 @@
 #include "include/lidar_control.h"
 
+#include "include/livox_control.h"
 #include "include/rslidar_control.h"
 #include "include/velodyne_control.h"
 
@@ -17,6 +18,9 @@ void LidarControl::BuildHandler() {
     break;
   case LidarModel::RSLIDAR:
     ConfHandler().reset(new RslidarConfigHandler());
+    break;
+  case LidarModel::LIVOX:
+    ConfHandler().reset(new LivoxConfigHandler());
     break;
   default:
     exit(EXIT_FAILURE);

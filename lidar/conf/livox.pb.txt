@@ -1,0 +1,28 @@
+conf {
+    base {
+        controller_identifier: "/_control/lidar/livox/scan/1/lab/test1"
+        identifier: "/lidar/livox/scan/1/lab/test1"
+
+        device_config_path: "/home/kit/dev/BATsNet/lidar/conf/livox_device.pb.txt"
+        service_cmd: "/home/kit/dev/BATsNet/build/lidar/livox"
+        service_argv: "/home/kit/dev/BATsNet/lidar/conf/livox_device.pb.txt"
+
+        control_service_port: "50051"
+    }
+    model: LIVOX
+}
+
+state {
+    base {
+        # mode: SHARING
+        mode: LOCAL_SAVING
+    }
+}
+
+livox_conf {
+    device_broadcast_code: "3WEDH7600105441"
+    ipc_topic_name: "/livox/scan"
+}
+
+data_collecter_ip: "192.168.100.3"
+data_collecter_port: 1883

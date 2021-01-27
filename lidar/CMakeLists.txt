@@ -18,6 +18,7 @@ EXEC_PROGRAM(protoc
        -I=${GLOBAL_HEADER}/common/proto
        -I=${CMAKE_CURRENT_SOURCE_DIR}/lib/velodyne/proto
        -I=${CMAKE_CURRENT_SOURCE_DIR}/lib/rslidar/proto
+       -I=${CMAKE_CURRENT_SOURCE_DIR}/lib/livox/proto
        --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto
        --plugin=protoc-gen-grpc=`which grpc_cpp_plugin`
        --grpc_python_out=${CMAKE_CURRENT_SOURCE_DIR}/proto
@@ -29,7 +30,7 @@ file(GLOB PROTO_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.cc)
 if(INSTALL_DRIVER)
     add_library(lidar_proto STATIC ${PROTO_SRC_FILES})
     target_link_libraries(lidar_proto ${Protobuf_LIBRARIES}
-        common rslidar_proto velodyne_proto)
+        common rslidar_proto velodyne_proto livox_lidar_proto)
     
     add_executable(rslidar src/rslidar.cc)
     target_link_libraries(rslidar rslidar_lib 
@@ -38,8 +39,12 @@ if(INSTALL_DRIVER)
     add_executable(velodyne src/velodyne.cc)
     target_link_libraries(velodyne velodyne_driver 
         lidar_proto ${Protobuf_LIBRARIES} data_collector transport service_node)
+    
+    add_executable(livox src/livox.cc)
+    target_link_libraries(livox livox_lidar_lib
+        lidar_proto ${Protobuf_LIBRARIES} data_collector transport service_node)
 
-    add_library(lidar_control_lib STATIC src/lidar_control.cc src/rslidar_control.cc src/velodyne_control.cc)
+    add_library(lidar_control_lib STATIC src/lidar_control.cc src/rslidar_control.cc src/velodyne_control.cc src/livox_control.cc)
     target_link_libraries(lidar_control_lib device lidar_proto)
 
     add_executable(lidar_controller src/controller.cc)

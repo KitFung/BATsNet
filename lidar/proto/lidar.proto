@@ -3,6 +3,7 @@ syntax = "proto2";
 import "common.proto";
 import "velodyne.proto";
 import "rslidar.proto";
+import "livox.proto";
 
 package lidar;
 
@@ -27,6 +28,7 @@ message SetStateResponse {
 enum LidarModel {
   RSLIDAR = 1;
   VELODYNE = 2;
+  LIVOX = 3;
 }
 
 message ControllerConf {
@@ -47,8 +49,9 @@ message DeviceConf {
   oneof model_conf {
     rslidar.Conf rslidar_conf = 3;
     velodyne.VelodyneDriverConf velodyne_conf = 4;
+    livox.Conf livox_conf = 5;
   };
-  reserved 5 to 13;
+  reserved 6 to 13;
 
   required string data_collecter_ip = 14;
   required int32 data_collecter_port = 15;

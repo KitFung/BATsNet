@@ -14,8 +14,8 @@ conf {
 
 state {
     base {
-        mode: SHARING
-        # mode: LOCAL_SAVING
+        # mode: SHARING
+        mode: LOCAL_SAVING
     }
 }
 

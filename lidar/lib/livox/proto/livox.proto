@@ -1,0 +1,22 @@
+syntax = "proto2";
+
+package livox;
+
+message PointXYZRTL {
+  required float x = 1;
+  required float y = 2;
+  required float z = 3;
+  optional float reflectivity = 4 [default = 0];
+  optional uint32 tag = 5 [default = 0];
+  optional uint32 line = 6 [default = 0];
+};
+
+message PointCloud {
+  required double stamp = 1;
+  repeated PointXYZRTL point = 2;
+}
+
+message Conf {
+  required string device_broadcast_code = 1;
+  required string ipc_topic_name = 8;
+}

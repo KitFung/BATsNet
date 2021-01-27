@@ -10,7 +10,8 @@ conf {
 }
 state {
   base {
-    mode: SHARING
+    # mode: SHARING
+    mode: LOCAL_SAVING
   }
 }
 velodyne_conf {
