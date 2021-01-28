@@ -10,3 +10,9 @@ install(
 )
 
 install(FILES systemd/vpn_tunnel.service DESTINATION /etc/systemd/system)
+
+set(SYSTEM_RELOAD_CMD "execute_process(COMMAND /bin/systemctl daemon-reload)")
+install(CODE ${SYSTEM_RELOAD_CMD})
+
+set(VPN_RESTART_CMD "execute_process(COMMAND /usr/sbin/service vpn_tunnel restart)")
+install(CODE ${VPN_RESTART_CMD})
