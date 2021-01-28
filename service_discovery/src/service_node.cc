@@ -15,6 +15,9 @@ ServiceNode::ServiceNode(const std::string &identifier, const int remote_port,
                          const int local_port)
     : identifier_(identifier), service_port_(remote_port),
       local_port_(local_port) {
+  // A tmp solution for no bat
+  return;
+
   etcd_ = std::make_shared<etcd::Client>(ketcd_src);
   local_etcd_ = std::make_shared<etcd::Client>(klocal_etcd_src);
   std::cout << "[ServiceNode] Connected to etcd: " << ketcd_src << std::endl;
@@ -34,6 +37,9 @@ ServiceNode::ServiceNode(const std::string &identifier, const int remote_port,
 // For register video stream
 ServiceNode::ServiceNode(const std::string &identifier, const std::string &path)
     : identifier_(identifier) {
+  // A tmp solution for no bat
+  return;
+
   etcd_ = std::make_shared<etcd::Client>(ketcd_src);
   local_etcd_ = std::make_shared<etcd::Client>(klocal_etcd_src);
 
@@ -49,6 +55,9 @@ ServiceNode::ServiceNode(const std::string &identifier, const std::string &path)
 }
 
 ServiceNode::~ServiceNode() {
+  // A tmp solution for no bat
+  return;
+
   running_ = false;
   if (inner_loop_.joinable()) {
     inner_loop_.join();
