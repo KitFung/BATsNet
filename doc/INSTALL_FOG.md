@@ -281,7 +281,7 @@ sudo systemctl enable vpn_tunnel
 
 ```
 cd fog_side/data_sync
-bash install_cron.sh
+sudo bash install_cron.sh
 ```
 
 ## Step 13: Join the k8s network
