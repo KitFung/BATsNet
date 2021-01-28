@@ -20,7 +20,7 @@ struct DataCollectParams {
   int keep_alive = 60;
   double adjust_step = 0.2;
   int qos = 1; // 0 = try once, 1 = retry 1 max, 2 retry until done
-  CollectMode mode = CollectMode::REAL_TIME_UPLOAD;
+  CollectMode mode = CollectMode::LOCAL_SAVE;
 };
 
 class DataCollector : public mosqpp::mosquittopp {
