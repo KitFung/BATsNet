@@ -34,7 +34,7 @@ void LocalSaving(livox::livoxDriver *driver, const lidar::DeviceConf &conf) {
   while (driver->poll(&cloud)) {
     if (cloud.point_size() > 0) {
       auto data_str = cloud.SerializeAsString();
-      std::cout << cloud.stamp() << " : " << cloud.point_size() << std::endl;
+    //   std::cout << cloud.stamp() << " : " << cloud.point_size() << std::endl;
       bool flag = collector_->SendData(out_topic.c_str(), data_str.c_str(),
                                        data_str.size());
     }
