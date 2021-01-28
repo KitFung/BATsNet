@@ -1,7 +1,7 @@
 conf {
     base {
-        controller_identifier: "/_control/lidar/livox/scan/1/lab/test1"
-        identifier: "/lidar/livox/scan/1/lab/test1"
+        controller_identifier: "/_control/lidar/livox/cloud/1/lab/test1"
+        identifier: "/lidar/livox/cloud/1/lab/test1"
 
         device_config_path: "/home/kit/dev/BATsNet/lidar/conf/livox_device.pb.txt"
         service_cmd: "/home/kit/dev/BATsNet/build/lidar/livox"
@@ -21,7 +21,7 @@ state {
 
 livox_conf {
     device_broadcast_code: "3WEDH7600105441"
-    ipc_topic_name: "/livox/scan"
+    ipc_topic_name: "/livox/cloud"
 }
 
 data_collecter_ip: "192.168.100.3"

@@ -3,8 +3,8 @@ conf {
         controller_identifier: "/_control/lidar/livox/cloud/1/lab/test1"
         identifier: "/lidar/livox/cloud/1/lab/test1"
 
-        device_cfig_path: "/opt/aiot/conf/lidar/livox_device.pb.txt"
-        service_cmdon: "/opt/aiot/bin/livox"
+        device_config_path: "/opt/aiot/conf/lidar/livox_device.pb.txt"
+        service_cmd: "/opt/aiot/bin/livox"
         service_argv: "/opt/aiot/conf/lidar/livox_device.pb.txt"
 
         control_service_port: "50051"
