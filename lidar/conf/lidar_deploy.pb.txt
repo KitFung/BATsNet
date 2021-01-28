@@ -3,8 +3,8 @@ conf {
         controller_identifier: "/_control/lidar/livox/cloud/1/lab/test1"
         identifier: "/lidar/livox/cloud/1/lab/test1"
 
-        device_config_path: "/opt/aiot/conf/lidar/livox_device.pb.txt"
-        service_cmd: "/opt/aiot/bin/livox"
+        device_cfig_path: "/opt/aiot/conf/lidar/livox_device.pb.txt"
+        service_cmdon: "/opt/aiot/bin/livox"
         service_argv: "/opt/aiot/conf/lidar/livox_device.pb.txt"
 
         control_service_port: "50051"
@@ -23,3 +23,6 @@ livox_conf {
     device_broadcast_code: "3WEDH7600105441"
     ipc_topic_name: "/livox/cloud"
 }
+
+data_collecter_ip: "192.168.100.3"
+data_collecter_port: 1883
