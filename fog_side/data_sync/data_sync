@@ -1,1 +1,1 @@
-0 2,10,18 * * *   nvidia	bash /opt/aiot/data_sync/simple_rsync_upload.sh
+0 2,10,18 * * *   root	bash /opt/aiot/data_sync/simple_rsync_upload.sh
