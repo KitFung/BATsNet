@@ -6,7 +6,7 @@ sleep 10
 
 cd /opt/aiot/buf
 TIMESTAMP=$(date '+%Y-%m-%d-%H-%M-%S')
-TAR_FILE=${NODE_NAME}-${TIMESTAMP}.tar
+TAR_FILE=${NODE_NAME}-${TIMESTAMP}.tar.gz
 
 tar -cvf $TAR_FILE --remove-files */*
 

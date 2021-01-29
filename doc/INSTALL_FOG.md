@@ -282,6 +282,14 @@ sudo systemctl enable vpn_tunnel
 ```
 cd fog_side/data_sync
 sudo bash install_cron.sh
+
+# Setup scp without password
+ssh-keygen
+ssh-copy-id -p 2202 testbed@137.189.97.26
+
+sudo -i
+ssh-keygen
+ssh-copy-id -p 2202 testbed@137.189.97.26
 ```
 
 ## Step 13: Join the k8s network
